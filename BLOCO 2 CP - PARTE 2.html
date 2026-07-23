@@ -249,25 +249,41 @@ function showToast(msg){
 }
 
 async function saveState(){
+  const payload = JSON.stringify({ easyIds, answers, filter, currentIndex, searchTerm });
+  // window.storage só existe dentro do ambiente do Claude. Fora dele (ex: GitHub Pages),
+  // usamos localStorage do navegador, que persiste normalmente em qualquer site.
   try{
-    await window.storage.set(STORAGE_KEY, JSON.stringify({
-      easyIds, answers, filter, currentIndex, searchTerm
-    }), false);
+    if(window.storage && typeof window.storage.set === 'function'){
+      await window.storage.set(STORAGE_KEY, payload, false);
+      return;
+    }
+  }catch(e){ /* cai para localStorage abaixo */ }
+  try{
+    localStorage.setItem(STORAGE_KEY, payload);
   }catch(e){ console.error('save error', e); }
 }
 
 async function loadState(){
+  let raw = null;
   try{
-    const res = await window.storage.get(STORAGE_KEY, false);
-    if(res && res.value){
-      const st = JSON.parse(res.value);
+    if(window.storage && typeof window.storage.get === 'function'){
+      const res = await window.storage.get(STORAGE_KEY, false);
+      if(res && res.value) raw = res.value;
+    }
+  }catch(e){ /* cai para localStorage abaixo */ }
+  if(raw === null){
+    try{ raw = localStorage.getItem(STORAGE_KEY); }catch(e){ /* sem storage disponível */ }
+  }
+  if(raw){
+    try{
+      const st = JSON.parse(raw);
       easyIds = st.easyIds || [];
       answers = st.answers || {};
       filter = st.filter || 'all';
       currentIndex = st.currentIndex || 0;
       searchTerm = st.searchTerm || '';
-    }
-  }catch(e){ /* no saved state yet */ }
+    }catch(e){ /* progresso corrompido, ignora */ }
+  }
 }
 
 function escapeHtml(s){
