@@ -422,8 +422,8 @@ function renderQuestion(){
   if(existing){
     // already answered — lock in and show result
     btnV.disabled = true; btnF.disabled = true;
-    btnV.classList.add(existing.selected===true ? 'selected' : '', existing.selected===true?'v':'');
-    btnF.classList.add(existing.selected===false ? 'selected' : '', existing.selected===false?'f':'');
+    if(existing.selected===true){ btnV.classList.add('selected'); btnV.classList.add('v'); }
+    if(existing.selected===false){ btnF.classList.add('selected'); btnF.classList.add('f'); }
     btnConfirm.disabled = true;
     btnConfirm.textContent = 'Resposta confirmada';
     showResult(q, existing);
