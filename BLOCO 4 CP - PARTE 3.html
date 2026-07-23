@@ -138,6 +138,15 @@ body{
       <button class="btn" id="btnGoSummaryHome">📊 Ver resumo / revisão</button>
       <button class="btn" id="btnRestartHome">↺ Recomeçar (mantém fáceis)</button>
       <button class="btn danger" id="btnResetAllHome">Zerar tudo</button>
+      <button class="btn" id="btnExportProgress">📤 Exportar progresso</button>
+      <button class="btn" id="btnImportProgress">📥 Importar progresso</button>
+    </div>
+    <div id="exportImportBox" style="display:none;margin-top:12px;">
+      <textarea id="exportImportText" rows="4" style="width:100%;background:var(--surface);border:1px solid var(--hair);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:.7rem;padding:10px;"></textarea>
+      <div class="row-actions" style="margin-top:8px;">
+        <button class="btn small" id="btnConfirmImport" style="display:none;">Confirmar importação</button>
+        <button class="btn small" id="btnCloseExportImport">Fechar</button>
+      </div>
     </div>
   </div>
 
@@ -662,6 +671,60 @@ document.getElementById('btnResetAllHome').addEventListener('click', async ()=>{
     refreshGlobalStats();
     showToast('Tudo foi zerado.');
   }
+});
+
+document.getElementById('btnExportProgress').addEventListener('click', ()=>{
+  const payload = JSON.stringify({ easyIds, answers });
+  let code;
+  try{ code = btoa(unescape(encodeURIComponent(payload))); }
+  catch(e){ code = payload; }
+  const box = document.getElementById('exportImportBox');
+  const ta = document.getElementById('exportImportText');
+  ta.value = code;
+  document.getElementById('btnConfirmImport').style.display = 'none';
+  box.style.display = 'block';
+  ta.focus();
+  ta.select();
+  showToast('Código gerado — copie e guarde em algum lugar.');
+});
+
+document.getElementById('btnImportProgress').addEventListener('click', ()=>{
+  const box = document.getElementById('exportImportBox');
+  const ta = document.getElementById('exportImportText');
+  ta.value = '';
+  ta.placeholder = 'Cole aqui o código exportado e clique em Confirmar importação';
+  document.getElementById('btnConfirmImport').style.display = '';
+  box.style.display = 'block';
+  ta.focus();
+});
+
+document.getElementById('btnConfirmImport').addEventListener('click', async ()=>{
+  const raw = document.getElementById('exportImportText').value.trim();
+  if(!raw) return;
+  let payload;
+  try{
+    let jsonStr;
+    try{ jsonStr = decodeURIComponent(escape(atob(raw))); }
+    catch(e){ jsonStr = raw; }
+    payload = JSON.parse(jsonStr);
+  }catch(e){
+    showToast('Código inválido — confira se copiou tudo certinho.');
+    return;
+  }
+  if(!confirm('Isso vai SUBSTITUIR seu progresso atual neste navegador pelo progresso do código importado. Confirmar?')) return;
+  easyIds = payload.easyIds || [];
+  answers = payload.answers || {};
+  currentIndex = 0;
+  await saveState();
+  applyFilter();
+  buildHome();
+  refreshGlobalStats();
+  document.getElementById('exportImportBox').style.display = 'none';
+  showToast('Progresso importado com sucesso.');
+});
+
+document.getElementById('btnCloseExportImport').addEventListener('click', ()=>{
+  document.getElementById('exportImportBox').style.display = 'none';
 });
 
 document.addEventListener('keydown', (e)=>{
