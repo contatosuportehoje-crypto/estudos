@@ -3571,11 +3571,19 @@
 
   var ALL_CARDS = JSON.parse(document.getElementById('cards-data').textContent);
   var STORAGE_KEY = 'lai_quiz_progress_v1_parte1';
+  var OLD_SHARED_KEY = 'lai_quiz_progress_v1'; // chave antiga (compartilhada com a Parte 2) — usada para recuperar progresso salvo antes da correção
 
   var memoryFallback = null; // used if localStorage is unavailable (e.g. sandboxed preview)
   function loadStorage(){
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw){
+        var oldRaw = localStorage.getItem(OLD_SHARED_KEY);
+        if(oldRaw){
+          localStorage.setItem(STORAGE_KEY, oldRaw); // migra o progresso antigo para a chave nova desta parte
+          raw = oldRaw;
+        }
+      }
       return raw ? JSON.parse(raw) : null;
     }catch(e){
       return memoryFallback;
