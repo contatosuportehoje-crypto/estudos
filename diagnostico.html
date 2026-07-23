@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Diagnóstico de Salvamento</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#14171f;color:#eee9df;padding:24px;line-height:1.6;}
+h1{color:#c9a94f;font-size:1.3rem;}
+.card{background:#1d212c;border:1px solid #343b4b;border-radius:10px;padding:18px 20px;margin-bottom:16px;}
+.ok{color:#5c8a63;font-weight:700;}
+.fail{color:#c1453c;font-weight:700;}
+button{background:#8d7638;color:#1d1503;border:none;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem;margin-top:8px;}
+input{width:100%;padding:8px;margin-top:8px;background:#262b38;border:1px solid #343b4b;border-radius:6px;color:#eee9df;}
+pre{white-space:pre-wrap;word-break:break-all;font-size:.75rem;background:#0e1117;padding:10px;border-radius:6px;max-height:200px;overflow:auto;}
+</style>
+</head>
+<body>
+<h1>🔎 Diagnóstico de salvamento de progresso</h1>
+
+<div class="card">
+  <b>Teste 1 — localStorage funciona neste navegador/site?</b>
+  <div id="t1result">testando...</div>
+</div>
+
+<div class="card">
+  <b>Teste 2 — o arquivo do quiz publicado tem a correção de salvamento?</b>
+  <p style="font-size:.85rem;color:#a8aebb">Digite o nome exato do arquivo .html do quiz que está na mesma pasta (ex: <code>BLOCO 2 CP - PARTE 1.html</code>) e clique em checar.</p>
+  <input id="filename" value="BLOCO 2 CP - PARTE 1.html">
+  <button onclick="checarArquivo()">Checar arquivo</button>
+  <div id="t2result" style="margin-top:10px;"></div>
+</div>
+
+<div class="card">
+  <b>O que está salvo agora nesse navegador/site (todas as chaves):</b>
+  <pre id="dump"></pre>
+</div>
+
+<script>
+// Teste 1: localStorage básico
+try{
+  localStorage.setItem('__diag_test__', 'ok-' + Date.now());
+  const v = localStorage.getItem('__diag_test__');
+  if(v && v.startsWith('ok-')){
+    document.getElementById('t1result').innerHTML = '<span class="ok">✔ localStorage FUNCIONA neste site.</span>';
+  } else {
+    document.getElementById('t1result').innerHTML = '<span class="fail">✘ localStorage não retornou o valor salvo.</span>';
+  }
+  localStorage.removeItem('__diag_test__');
+}catch(e){
+  document.getElementById('t1result').innerHTML = '<span class="fail">✘ localStorage BLOQUEADO neste navegador/site. Erro: ' + e.message + '</span>';
+}
+
+function dumpAll(){
+  let out = '';
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      out += k + ' = ' + localStorage.getItem(k).slice(0,150) + '\n\n';
+    }
+    if(!out) out = '(vazio - nenhuma chave salva ainda neste site)';
+  }catch(e){ out = 'erro ao ler: ' + e.message; }
+  document.getElementById('dump').textContent = out;
+}
+dumpAll();
+
+async function checarArquivo(){
+  const el = document.getElementById('t2result');
+  el.innerHTML = 'buscando...';
+  const fname = document.getElementById('filename').value;
+  try{
+    const res = await fetch(fname, {cache: 'no-store'});
+    if(!res.ok){
+      el.innerHTML = '<span class="fail">✘ Não achei o arquivo "' + fname + '" nesta pasta (status ' + res.status + '). Confira o nome exato.</span>';
+      return;
+    }
+    const text = await res.text();
+    const temLocalStorage = text.includes('localStorage.setItem');
+    const temWindowStorage = text.includes('window.storage');
+    const temRecomecar = text.includes('btnRestartHome');
+    let html = '';
+    html += (temLocalStorage ? '<span class="ok">✔ Tem localStorage.setItem (correção presente)</span>' : '<span class="fail">✘ NÃO tem localStorage.setItem — arquivo desatualizado!</span>') + '<br>';
+    html += (temWindowStorage ? 'Também referencia window.storage (esperado, é o fallback pro Claude).' : '<span class="fail">Não referencia window.storage.</span>') + '<br>';
+    html += (temRecomecar ? '✔ Tem botão Recomeçar.' : 'Não tem botão Recomeçar (versão mais antiga, sem esse botão específico, mas isso não afeta o salvamento).');
+    el.innerHTML = html;
+    dumpAll();
+  }catch(e){
+    el.innerHTML = '<span class="fail">✘ Erro ao buscar o arquivo: ' + e.message + '</span>';
+  }
+}
+</script>
+</body>
+</html>
