@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz V/F — Direito Penal</title>
+<style>
+  :root{
+    --ink:#1b1f2a;
+    --paper:#faf7f0;
+    --paper-2:#f0ebe0;
+    --line:#d8d0bd;
+    --brass:#8a6a3d;
+    --brass-dark:#6b512c;
+    --wine:#7a2e2e;
+    --wine-dark:#5c2222;
+    --pine:#2f5b47;
+    --pine-dark:#234436;
+    --muted:#6b6355;
+    --card:#ffffff;
+    --shadow: 0 2px 10px rgba(27,31,42,0.08);
+    --radius: 10px;
+    --serif: "Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif;
+    --sans: "Helvetica Neue",Arial,sans-serif;
+    --mono: "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 700px at 10% -10%, #fffdf7 0%, transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100vh;
+    padding:20px 14px 60px;
+  }
+  .wrap{max-width:720px;margin:0 auto;}
+
+  header.top{
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:10px;margin-bottom:18px;
+    flex-wrap:wrap;gap:6px;
+  }
+  header.top .brand{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:0.3px;
+  }
+  header.top .brand span{color:var(--wine);}
+  header.top .tag{
+    font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:20px;
+    margin-bottom:16px;
+  }
+
+  /* HOME / BLOCK SELECT */
+  .blocklist{display:flex;flex-direction:column;gap:8px;}
+  .block-btn{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px;
+    cursor:pointer;
+    text-align:left;
+    font-family:var(--sans);
+    font-size:14.5px;
+    color:var(--ink);
+    transition:border-color .15s, transform .1s;
+  }
+  .block-btn:hover{border-color:var(--brass);}
+  .block-btn:active{transform:scale(0.995);}
+  .block-btn .bnum{
+    font-family:var(--mono);font-size:11px;color:var(--muted);
+    min-width:26px;
+  }
+  .block-btn .bname{flex:1;font-weight:600;}
+  .block-btn .bmeta{font-size:12px;color:var(--muted);white-space:nowrap;}
+  .block-btn.all{
+    background:linear-gradient(180deg, var(--ink), #262c3b);
+    color:#fff;border-color:var(--ink);
+  }
+  .block-btn.all .bmeta, .block-btn.all .bnum{color:#d8d0bd;}
+
+  .progress-mini{
+    height:6px;border-radius:3px;background:var(--paper-2);overflow:hidden;
+    margin-top:4px;
+  }
+  .progress-mini > div{height:100%;background:var(--pine);}
+
+  h1.title{
+    font-family:var(--serif);font-size:20px;margin:0 0 4px;
+  }
+  p.sub{color:var(--muted);font-size:13.5px;margin:0 0 16px;line-height:1.5;}
+
+  /* QUIZ SCREEN */
+  .quiz-header{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:10px;font-size:12.5px;color:var(--muted);
+  }
+  .quiz-header .back{
+    cursor:pointer;color:var(--wine);font-weight:600;
+    background:none;border:none;font-size:12.5px;padding:0;
+  }
+  .quiz-header .counter{font-family:var(--mono);}
+
+  .stat-bar{
+    display:flex;gap:14px;font-size:12px;color:var(--muted);
+    margin-bottom:12px;flex-wrap:wrap;
+  }
+  .stat-bar b{color:var(--ink);}
+
+  .qtag{
+    display:inline-block;
+    font-size:10.5px;text-transform:uppercase;letter-spacing:1px;
+    color:var(--brass-dark);
+    background:#f2e9d8;
+    border:1px solid #e2d3ac;
+    padding:3px 9px;border-radius:20px;
+    margin-bottom:12px;
+  }
+  .qtext{
+    font-family:var(--serif);
+    font-size:19px;line-height:1.5;
+    margin-bottom:20px;
+  }
+
+  .choices{display:flex;gap:10px;margin-bottom:16px;}
+  .choice-btn{
+    flex:1;padding:14px 10px;border-radius:8px;
+    border:2px solid var(--line);
+    background:var(--paper);
+    font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:0.5px;
+    cursor:pointer;color:var(--ink);
+    transition:all .12s;
+  }
+  .choice-btn:hover{border-color:var(--muted);}
+  .choice-btn.selected.V{border-color:var(--pine);background:#e9f2ec;color:var(--pine-dark);}
+  .choice-btn.selected.F{border-color:var(--wine);background:#f6e9e9;color:var(--wine-dark);}
+  .choice-btn:disabled{cursor:default;}
+  .choice-btn.correct-reveal{border-color:var(--pine);background:#e2f0e7;color:var(--pine-dark);}
+  .choice-btn.wrong-reveal{border-color:var(--wine);background:#f6e4e4;color:var(--wine-dark);}
+
+  .confirm-btn{
+    width:100%;padding:13px;border-radius:8px;border:none;
+    background:var(--ink);color:#fff;font-weight:700;font-size:14.5px;
+    cursor:pointer;letter-spacing:0.3px;
+  }
+  .confirm-btn:disabled{background:#c9c2b3;cursor:not-allowed;}
+  .confirm-btn:hover:not(:disabled){background:#2c3140;}
+
+  .result-box{
+    border-radius:8px;padding:14px 16px;margin-bottom:14px;
+    font-size:14.5px;line-height:1.55;
+  }
+  .result-box.ok{background:#e9f2ec;border:1px solid #bcd8c6;}
+  .result-box.bad{background:#f6e9e9;border:1px solid #e0bcbc;}
+  .result-box .verdict{
+    font-weight:800;font-size:15px;margin-bottom:6px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .result-box.ok .verdict{color:var(--pine-dark);}
+  .result-box.bad .verdict{color:var(--wine-dark);}
+  .result-box .justif{color:#3a3a3a;}
+
+  .guess-row{
+    display:flex;gap:10px;margin-bottom:14px;
+  }
+  .guess-btn{
+    flex:1;padding:10px;border-radius:8px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink);
+  }
+  .guess-btn:hover{border-color:var(--brass);}
+  .guess-btn.chosen{background:var(--brass);color:#fff;border-color:var(--brass-dark);}
+
+  .nav-row{display:flex;gap:10px;margin-top:6px;}
+  .nav-btn{
+    flex:1;padding:11px;border-radius:8px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink);
+  }
+  .nav-btn:hover{border-color:var(--brass);}
+  .nav-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .nav-btn.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .nav-btn.primary:hover{background:#2c3140;}
+
+  .toolbar{
+    display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;
+  }
+  .tool-btn{
+    font-size:12px;padding:7px 12px;border-radius:20px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;color:var(--ink);font-weight:600;
+  }
+  .tool-btn:hover{border-color:var(--brass);}
+
+  /* REVIEW */
+  .review-item{
+    border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;
+    font-size:13.5px;line-height:1.5;
+  }
+  .review-item .rtag{
+    font-size:10px;text-transform:uppercase;letter-spacing:0.8px;
+    padding:2px 7px;border-radius:12px;margin-right:6px;font-weight:700;
+  }
+  .review-item .rtag.err{background:#f6e4e4;color:var(--wine-dark);}
+  .review-item .rtag.chute{background:#f2e9d8;color:var(--brass-dark);}
+  .review-item .rq{font-weight:600;margin:6px 0 4px;}
+  .review-item .rj{color:var(--muted);}
+
+  footer.foot{
+    text-align:center;color:var(--muted);font-size:11.5px;margin-top:24px;
+    line-height:1.6;
+  }
+
+  .empty{
+    text-align:center;color:var(--muted);padding:30px 10px;font-size:14px;
+  }
+
+  .toast{
+    position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;
+    font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,0.25);
+    opacity:0;pointer-events:none;transition:opacity .25s;
+    z-index:50;
+  }
+  .toast.show{opacity:1;}
+
+  @media (max-width:420px){
+    .qtext{font-size:17px;}
+    .choices{flex-direction:row;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ DATA ============ */
+const BLOCKS = [{"id":"B1","name":"Extinção da Punibilidade"},{"id":"B2","name":"Prescrição — Tipos e Parâmetros"},{"id":"B3","name":"Prescrição — Termos Iniciais"},{"id":"B4","name":"Prescrição — Suspensão e Interrupção"},{"id":"B5","name":"Penas Privativas de Liberdade e Regimes"},{"id":"B6","name":"Penas Restritivas de Direitos e Multa"},{"id":"B7","name":"Sursis"},{"id":"B8","name":"Livramento Condicional"},{"id":"B9","name":"Concurso de Crimes"},{"id":"B10","name":"Concurso de Pessoas"},{"id":"B11","name":"Dosimetria e Reincidência"},{"id":"B12","name":"Efeitos da Condenação e Confisco Alargado"},{"id":"B13","name":"Medidas de Segurança e Imputabilidade"},{"id":"B14","name":"Teoria da Pena"},{"id":"B15","name":"Casos Práticos"},{"id":"B16","name":"Tópicos Novos (Jurisprudência)"},{"id":"B17","name":"Concurso de Pessoas — Caso Torcida"}];
+const RAW_QUESTIONS = [{"blk":"B1","q":"O rol de causas de extinção da punibilidade do Art. 107 do CP é taxativo, não admitindo causas previstas em leis especiais.","a":false,"j":"O rol é exemplificativo (numerus apertus). Existem outras causas em leis especiais, como o pagamento integral do débito em crimes tributários, que extingue a punibilidade a qualquer tempo."},{"blk":"B1","q":"A sentença que concede o Perdão Judicial gera reincidência e produz efeito condenatório.","a":false,"j":"Súmula 18 do STJ: a sentença é meramente declaratória da extinção da punibilidade. Não gera reincidência nem qualquer efeito condenatório."},{"blk":"B1","q":"A Abolitio Criminis faz cessar todos os efeitos do crime, inclusive a obrigação de indenizar a vítima.","a":false,"j":"A abolitio criminis extingue a punibilidade e faz cessar apenas os efeitos penais (principais e secundários). Os efeitos extrapenais, como a obrigação de indenizar, subsistem."},{"blk":"B1","q":"Qualquer alteração no texto de uma norma incriminadora configura, automaticamente, Abolitio Criminis.","a":false,"j":"Só há abolitio se houver efetiva supressão da figura criminosa. Se o fato continuar sendo crime em outro dispositivo, ocorre continuidade normativa típica, não abolitio."},{"blk":"B1","q":"A abolitio criminis é causa de extinção da punibilidade (Art. 107, III, CP), e não de exclusão da antijuridicidade.","a":true,"j":"Correto. É extinção da punibilidade. Os efeitos penais cessam, mas os efeitos extrapenais (como indenizar) subsistem."},{"blk":"B1","q":"A decisão que extingue a punibilidade, uma vez transitada em julgado, não pode ser revista em prejuízo do réu, mesmo que proferida por juízo incompetente.","a":true,"j":"A coisa julgada da decisão extintiva da punibilidade é preservada mesmo diante de incompetência do juízo prolator."},{"blk":"B1","q":"O pagamento integral do débito tributário extingue a punibilidade a qualquer tempo, inclusive após o trânsito em julgado.","a":true,"j":"Correto. É uma das exceções ao rol do Art. 107 do CP, aplicável mesmo após o trânsito em julgado."},{"blk":"B1","q":"A retratação do agente extingue a punibilidade no crime de injúria.","a":false,"j":"A retratação extintiva de punibilidade se aplica a calúnia, difamação e falso testemunho ou falsa perícia (Art. 342, §2º, CP). Não se aplica à injúria."},{"blk":"B1","q":"A retratação do agente extingue a punibilidade no crime de calúnia.","a":true,"j":"Correto, é um dos crimes em que a retratação extingue a punibilidade."},{"blk":"B1","q":"A retratação do agente extingue a punibilidade no crime de difamação.","a":true,"j":"Correto, é um dos crimes em que a retratação extingue a punibilidade."},{"blk":"B1","q":"A retratação do agente extingue a punibilidade no crime de falso testemunho ou falsa perícia.","a":true,"j":"Correto (Art. 342, §2º, CP), desde que a retratação ocorra antes da sentença no processo em que ocorreu o falso."},{"blk":"B1","q":"O Indulto e a Graça são concedidos por Decreto Presidencial.","a":true,"j":"Correto. Ambos são concedidos por decreto do Presidente da República."},{"blk":"B1","q":"O Presidente da República pode delegar a concessão de indulto e graça ao Defensor Público-Geral Federal.","a":false,"j":"A delegação pode ser feita aos Ministros de Estado, ao PGR ou ao AGU. É vedada a delegação ao Defensor Público-Geral Federal."},{"blk":"B1","q":"O Presidente da República pode delegar a concessão de indulto e graça aos Ministros de Estado.","a":true,"j":"Correto, é uma das autoridades a quem a delegação pode ser feita."},{"blk":"B1","q":"O Presidente da República pode delegar a concessão de indulto e graça ao Procurador-Geral da República (PGR).","a":true,"j":"Correto, é uma das autoridades a quem a delegação pode ser feita."},{"blk":"B1","q":"O Presidente da República pode delegar a concessão de indulto e graça ao Advogado-Geral da União (AGU).","a":true,"j":"Correto, é uma das autoridades a quem a delegação pode ser feita."},{"blk":"B1","q":"A Graça (indulto individual) somente pode ser concedida mediante petição do condenado.","a":false,"j":"A Graça pode ser concedida de ofício, sem necessidade de petição do condenado."},{"blk":"B1","q":"Os crimes hediondos, a tortura, o tráfico ilícito de entorpecentes e o terrorismo são constitucionalmente insuscetíveis de indulto e graça.","a":true,"j":"Correto (Art. 5º, XLIII, CF). Mnemônico T-T-T-H."},{"blk":"B1","q":"O crime de Tortura é constitucionalmente insuscetível de indulto e graça.","a":true,"j":"Correto, é um dos 4 crimes do rol do Art. 5º, XLIII, CF (mnemônico T-T-T-H)."},{"blk":"B1","q":"O Tráfico ilícito de entorpecentes é constitucionalmente insuscetível de indulto e graça.","a":true,"j":"Correto, é um dos 4 crimes do rol do Art. 5º, XLIII, CF (mnemônico T-T-T-H)."},{"blk":"B1","q":"O Terrorismo é constitucionalmente insuscetível de indulto e graça.","a":true,"j":"Correto, é um dos 4 crimes do rol do Art. 5º, XLIII, CF (mnemônico T-T-T-H)."},{"blk":"B1","q":"Os crimes Hediondos são constitucionalmente insuscetíveis de indulto e graça.","a":true,"j":"Correto, é um dos 4 crimes/categorias do rol do Art. 5º, XLIII, CF (mnemônico T-T-T-H)."},{"blk":"B1","q":"Segundo o Art. 108 do CP, a extinção da punibilidade de um crime que é pressuposto ou elemento de outro se estende a este último.","a":false,"j":"O Art. 108 estabelece exatamente o contrário: a extinção da punibilidade de um crime que é pressuposto, elemento constitutivo ou circunstância agravante de outro NÃO se estende a este."},{"blk":"B1","q":"Na falsidade ideológica, o prazo prescricional reinicia a cada reiteração dos efeitos do documento falso.","a":false,"j":"É crime formal que se consuma no momento da conduta. A reiteração de efeitos é mero exaurimento e não reinicia o prazo prescricional."},{"blk":"B1","q":"Renúncia, decadência, perempção, perdão aceito e retratação (quando cabível) são institutos que extinguem a punibilidade na ação penal privada própria.","a":true,"j":"Correto. Todos esses institutos podem extinguir a punibilidade na ação privada própria."},{"blk":"B1","q":"Na ação pública condicionada, cabem perempção e perdão aceito como causas de extinção da punibilidade.","a":false,"j":"Na ação pública condicionada cabem renúncia à representação, decadência e retratação (quando cabível). Não cabem perempção nem perdão aceito, exclusivos da ação privada."},{"blk":"B1","q":"A prescrição, seja pela lei brasileira, seja pelo ordenamento do Estado requerente, impede a concessão de extradição.","a":true,"j":"Correto. Se a punibilidade estiver extinta pela prescrição em qualquer dos dois ordenamentos, a extradição não será concedida."},{"blk":"B1","q":"Se uma escola próxima ao local de um homicídio culposo antigo é desativada, alterando-se o limite de velocidade da via, ocorre abolitio criminis quanto àquele fato.","a":false,"j":"O tipo penal do homicídio culposo permanece; cessa apenas a agravante específica relacionada à proximidade da escola. Norma administrativa não gera abolitio de norma penal."},{"blk":"B2","q":"O parâmetro de cálculo da Prescrição da Pretensão Punitiva (PPP) Propriamente Dita é o máximo da pena privativa de liberdade cominada em abstrato ao crime.","a":true,"j":"Correto. Usa-se a pena máxima em abstrato cominada ao crime."},{"blk":"B2","q":"Tanto a PPP Retroativa quanto a PPP Superveniente (Intercorrente) utilizam a pena aplicada em concreto na sentença como parâmetro de cálculo.","a":true,"j":"Correto. A diferença está no período analisado: a retroativa olha para trás (denúncia até sentença) e a superveniente olha para frente (sentença até trânsito em julgado para a acusação); ambas usam a pena concreta."},{"blk":"B2","q":"É possível que a PPP Retroativa tenha como termo inicial data anterior ao recebimento da denúncia ou queixa.","a":false,"j":"O Art. 110, §1º, CP (Lei 12.234/2010) veda expressamente que a prescrição retroativa tenha termo inicial anterior à denúncia."},{"blk":"B2","q":"Para crimes cometidos após 2010, é permitida a prescrição retroativa pela pena em concreto no intervalo entre o fato e o recebimento da denúncia.","a":false,"j":"A Lei 12.234/2010 proibiu expressamente essa hipótese. Nesse intervalo, só se aplica a prescrição pela pena em abstrato."},{"blk":"B2","q":"O prazo prescricional para crime cuja pena máxima é superior a 12 anos é de 20 anos.","a":true,"j":"Correto (Art. 109, I, CP)."},{"blk":"B2","q":"O prazo prescricional para crime cuja pena máxima é superior a 8 anos e não excede 12 é de 16 anos.","a":true,"j":"Correto (Art. 109, II, CP)."},{"blk":"B2","q":"O prazo prescricional para crime cuja pena máxima é superior a 4 anos e não excede 8 é de 12 anos.","a":true,"j":"Correto (Art. 109, III, CP)."},{"blk":"B2","q":"O prazo prescricional para crime cuja pena máxima é superior a 2 anos e não excede 4 é de 8 anos.","a":true,"j":"Correto (Art. 109, IV, CP)."},{"blk":"B2","q":"O prazo prescricional para crime cuja pena máxima é igual ou superior a 1 ano e não excede 2 é de 4 anos.","a":true,"j":"Correto (Art. 109, V, CP)."},{"blk":"B2","q":"O prazo prescricional para crime cuja pena máxima é inferior a 1 ano é de 3 anos.","a":true,"j":"Correto (Art. 109, VI, CP)."},{"blk":"B2","q":"O prazo prescricional da pena de multa, quando for a única cominada ou aplicada, é de 4 anos.","a":false,"j":"É de 2 anos. Se a multa for alternativa ou cumulativa com a pena de prisão, segue o prazo desta (Art. 114, CP)."},{"blk":"B2","q":"As penas restritivas de direitos seguem prazos prescricionais próprios, diferentes dos das penas privativas de liberdade.","a":false,"j":"Aplicam-se os mesmos prazos previstos para as penas privativas de liberdade (Art. 109, parágrafo único, CP)."},{"blk":"B2","q":"No concurso de crimes, a prescrição incide sobre a pena total unificada, e não sobre a pena de cada crime isoladamente.","a":false,"j":"O Art. 119 do CP determina que a extinção da punibilidade incide sobre a pena de cada crime isoladamente."},{"blk":"B2","q":"No crime continuado, o acréscimo de pena decorrente da continuação (1/6 a 2/3) é considerado no cálculo do prazo prescricional.","a":false,"j":"A Súmula 497 do STF estabelece que a prescrição regula-se pela pena fixada na sentença, sem o acréscimo decorrente da continuação."},{"blk":"B2","q":"A reincidência influi no prazo da Prescrição da Pretensão Punitiva (PPP).","a":false,"j":"A Súmula 220 do STJ estabelece que a reincidência não influi no prazo da PPP; influi apenas no prazo da Prescrição da Pretensão Executória (PPE), aumentando-o em 1/3."},{"blk":"B2","q":"O prazo prescricional é reduzido pela metade quando o criminoso era menor de 21 anos ao tempo do crime ou maior de 70 anos na data da sentença.","a":true,"j":"Correto (Art. 115, CP)."},{"blk":"B2","q":"A redução do prazo prescricional pela metade do Art. 115 do CP aplica-se mesmo quando o crime envolve violência sexual contra a mulher.","a":false,"j":"Pela Lei 15.160/2025, essa redução não se aplica se o crime envolver violência sexual contra a mulher."},{"blk":"B2","q":"O menor de 18 anos tem o prazo prescricional reduzido pela metade, nos termos do Art. 115 do CP.","a":false,"j":"O menor de 18 anos é inimputável e não responde penalmente. O Art. 115 aplica-se a quem era menor de 21 (e maior de 18) anos ao tempo do crime."},{"blk":"B2","q":"A Prescrição Virtual (ou em perspectiva), baseada na pena que o juiz acredita que aplicaria, é aceita no ordenamento brasileiro.","a":false,"j":"Não é aceita (Súmula 438 do STJ e Tema 239 do STF)."},{"blk":"B2","q":"O infanticídio (pena máxima de 6 anos) prescreve em 12 anos, enquanto o furto simples (pena máxima de 4 anos) prescreve em 8 anos.","a":true,"j":"Correto. Infanticídio: pena máxima 6 anos → Art. 109, III → 12 anos. Furto simples: pena máxima 4 anos → Art. 109, IV → 8 anos."},{"blk":"B3","q":"O Código Penal adota a teoria do resultado (consumação) para o termo inicial da prescrição.","a":true,"j":"Correto. A prescrição começa a correr do dia em que o crime se consumou (Art. 111, I, CP)."},{"blk":"B3","q":"Na tentativa, a prescrição começa a correr do dia em que cessou a atividade criminosa.","a":true,"j":"Correto, conforme o Art. 111, II, CP."},{"blk":"B3","q":"Nos crimes permanentes, a prescrição começa a correr do dia em que teve início a permanência.","a":false,"j":"Começa a correr do dia em que cessou a permanência, e não do início."},{"blk":"B3","q":"Nos crimes contra a dignidade sexual de crianças e adolescentes, o termo inicial da prescrição é a data em que a vítima completa 18 anos, salvo se a ação penal já tiver sido proposta antes.","a":true,"j":"Correto, conforme o Art. 111, V, CP."},{"blk":"B3","q":"Nos crimes de violência contra crianças em geral (não apenas sexuais), a prescrição também começa a correr da data em que a vítima completa 18 anos, salvo ação penal já proposta.","a":true,"j":"Correto (Art. 111, V, CP — Lei 14.344/2022)."},{"blk":"B3","q":"Nos crimes de Bigamia e Falsificação de Registro Civil, a prescrição começa a correr da data do próprio crime, e não da data em que o fato se tornou conhecido.","a":false,"j":"Nesses crimes, a prescrição começa a correr da data em que o fato se tornou conhecido (Art. 111, IV, CP), exatamente pelo risco de longa ocultação."},{"blk":"B3","q":"O termo inicial diferenciado da falsificação de registro civil se justifica porque a falsificação pode permanecer oculta por longo período.","a":true,"j":"Correto. Por isso o termo inicial é o conhecimento do fato, e não a consumação."},{"blk":"B3","q":"A Prescrição da Pretensão Executória (PPE) começa a correr do dia em que transita em julgado a sentença condenatória para ambas as partes.","a":true,"j":"Correto (Art. 112, I, CP)."},{"blk":"B3","q":"Em caso de evasão do condenado ou revogação do livramento condicional, a prescrição é regulada pelo tempo que resta da pena.","a":true,"j":"Correto (Art. 113, CP)."},{"blk":"B3","q":"A citação válida do réu interrompe a prescrição no processo penal, tal como ocorre no processo civil.","a":false,"j":"Os marcos interruptivos penais (Art. 117, CP) são taxativos, e a citação não está entre eles."},{"blk":"B4","q":"São 4 as causas impeditivas (suspensivas) da prescrição previstas no Art. 116 do CP.","a":true,"j":"Correto: questão prejudicial em outro processo; agente cumprindo pena no exterior; pendência de embargos de declaração ou recursos inadmissíveis nos Tribunais Superiores; e enquanto não cumprido ou rescindido o ANPP."},{"blk":"B4","q":"A existência de questão prejudicial sendo discutida em outro processo é uma das causas suspensivas da prescrição (Art. 116, I, CP).","a":true,"j":"Correto, é a primeira das 4 causas impeditivas do Art. 116, CP."},{"blk":"B4","q":"O fato de o agente estar cumprindo pena no exterior suspende o curso da prescrição (Art. 116, II, CP).","a":true,"j":"Correto, é a segunda das 4 causas impeditivas do Art. 116, CP."},{"blk":"B4","q":"Enquanto pendem Embargos de Declaração ou recursos inadmissíveis nos Tribunais Superiores, a prescrição fica suspensa.","a":true,"j":"Correto (Art. 116, III, CP)."},{"blk":"B4","q":"Enquanto não cumprido ou rescindido o Acordo de Não Persecução Penal (ANPP), a prescrição fica suspensa.","a":true,"j":"Correto, é a quarta causa impeditiva do Art. 116, CP, incluída pelo Pacote Anticrime."},{"blk":"B4","q":"São 6 as causas interruptivas da prescrição previstas no Art. 117 do CP.","a":true,"j":"Correto: recebimento da denúncia/queixa, pronúncia, decisão confirmatória da pronúncia, publicação da sentença/acórdão condenatórios recorríveis, início/continuação do cumprimento da pena e reincidência."},{"blk":"B4","q":"O recebimento da denúncia ou queixa é causa interruptiva da prescrição (Art. 117, I, CP).","a":true,"j":"Correto, é a primeira das 6 causas interruptivas do Art. 117, CP."},{"blk":"B4","q":"A pronúncia é causa interruptiva da prescrição (Art. 117, II, CP).","a":true,"j":"Correto, aplicável nos crimes de competência do Tribunal do Júri."},{"blk":"B4","q":"A decisão confirmatória da pronúncia é causa interruptiva da prescrição (Art. 117, III, CP).","a":true,"j":"Correto, é a terceira das 6 causas interruptivas do Art. 117, CP."},{"blk":"B4","q":"A publicação da sentença ou acórdão condenatórios recorríveis é causa interruptiva da prescrição (Art. 117, IV, CP).","a":true,"j":"Correto, é a quarta das 6 causas interruptivas do Art. 117, CP."},{"blk":"B4","q":"O início ou a continuação do cumprimento da pena é causa interruptiva da prescrição (Art. 117, V, CP).","a":true,"j":"Correto, mas atenção: esse inciso, diferente dos incisos I a IV, produz efeitos apenas pessoais (não se estende a todos os acusados)."},{"blk":"B4","q":"A reincidência é causa interruptiva da prescrição (Art. 117, VI, CP).","a":true,"j":"Correto, mas, assim como o inciso V, produz efeitos apenas pessoais, e não para todos os acusados."},{"blk":"B4","q":"As causas interruptivas dos incisos V (início do cumprimento da pena) e VI (reincidência) do Art. 117 do CP produzem efeitos para todos os acusados.","a":false,"j":"Apenas os incisos I a IV produzem efeitos para todos os acusados. Os incisos V e VI são de caráter pessoal."},{"blk":"B4","q":"O acórdão que apenas confirma a sentença condenatória de 1º grau não interrompe a prescrição, por ser meramente confirmatório.","a":false,"j":"Segundo o STF e o STJ (Tema 1100), o acórdão condenatório sempre interrompe a prescrição, inclusive quando meramente confirmatório."},{"blk":"B4","q":"O recebimento do aditamento da denúncia interrompe a prescrição e produz efeitos para todos os acusados.","a":true,"j":"Correto (Art. 117, §1º, CP)."},{"blk":"B4","q":"Segundo a Súmula 220 do STJ, a reincidência influi no prazo da Prescrição da Pretensão Punitiva.","a":false,"j":"A Súmula 220 do STJ diz o contrário: a reincidência não influi no prazo da PPP, influindo apenas na PPE."},{"blk":"B4","q":"Depois de interrompida, todo o prazo prescricional começa a correr novamente do dia da interrupção, salvo a hipótese do inciso V do Art. 117.","a":true,"j":"Correto (Art. 117, §2º, CP)."},{"blk":"B4","q":"No caso de Heitor (nascido em 15/09/2002, roubo em 10/08/2023, pena de 4 anos e 1 mês), o prazo prescricional aplicável é de 6 anos.","a":true,"j":"Correto. Pena de 4a1m está na faixa do Art. 109, III (12 anos). Heitor tinha 20 anos ao tempo do fato (menor de 21), aplicando-se a redução pela metade do Art. 115 → 6 anos."},{"blk":"B4","q":"No caso de Hades (19 anos, receptação, pena de 2a6m10d, com 5 anos entre a sentença e o trânsito em julgado), ocorreu Prescrição Superveniente.","a":true,"j":"Correto. Prazo base de 8 anos (Art. 109, IV), reduzido pela metade (menor de 21 anos) = 4 anos. Como se passaram 5 anos entre sentença e trânsito, houve prescrição superveniente."},{"blk":"B5","q":"A pena de detenção pode ter regime inicial fechado.","a":false,"j":"A detenção somente pode iniciar em regime semiaberto ou aberto; só vai para o fechado em caso de regressão."},{"blk":"B5","q":"O regime fechado é cumprido em Penitenciária, o semiaberto em Colônia Agrícola ou Industrial e o aberto em Casa de Albergado.","a":true,"j":"Correto, conforme os estabelecimentos previstos para cada regime."},{"blk":"B5","q":"O preso provisório deve ficar recolhido em Cadeia Pública.","a":true,"j":"Correto, conforme a destinação legal para presos provisórios."},{"blk":"B5","q":"Pena superior a 8 anos deve ter início de cumprimento em regime fechado.","a":true,"j":"Correto (Art. 33, §2º, 'a', CP)."},{"blk":"B5","q":"Condenado não reincidente com pena superior a 4 anos e não excedente a 8 anos deve iniciar o cumprimento em regime semiaberto.","a":true,"j":"Correto (Art. 33, §2º, 'b', CP)."},{"blk":"B5","q":"Condenado não reincidente com pena igual ou inferior a 4 anos deve iniciar o cumprimento em regime aberto.","a":true,"j":"Correto (Art. 33, §2º, 'c', CP)."},{"blk":"B5","q":"Um condenado primário a 6 anos de reclusão deve iniciar o cumprimento em regime fechado.","a":false,"j":"Deve iniciar em regime semiaberto, pois a pena está na faixa superior a 4 e não excedente a 8 anos, sendo o réu não reincidente."},{"blk":"B5","q":"A progressão de regime em crimes contra a Administração Pública exige, cumulativamente, a reparação do dano E a devolução do produto do ilícito.","a":false,"j":"São condições alternativas, não cumulativas: reparação do dano OU devolução do produto do ilícito com acréscimos, salvo impossibilidade de fazê-lo."},{"blk":"B5","q":"A gravidade abstrata do crime justifica a imposição de regime mais severo do que o permitido pela pena aplicada.","a":false,"j":"As Súmulas 440 do STJ e 718 do STF vedam essa prática; exige-se fundamentação baseada em fatos concretos."},{"blk":"B5","q":"É possível fixar regime semiaberto para reincidente com pena igual ou inferior a 4 anos, se as circunstâncias judiciais forem favoráveis.","a":true,"j":"Correto (Súmula 269 do STJ)."},{"blk":"B5","q":"No regime aberto, o condenado trabalha ou estuda fora sem vigilância, mas deve recolher-se no período noturno e nos dias de folga.","a":true,"j":"Correto, conforme o Art. 36 do CP."},{"blk":"B5","q":"O trabalho externo no regime fechado é livremente permitido, sem exigência de cautelas específicas.","a":false,"j":"É permitido apenas em serviços ou obras públicas, com as cautelas contra a fuga exigidas pelo Art. 34, §3º, CP."},{"blk":"B5","q":"O limite máximo de cumprimento de penas no Brasil, após o Pacote Anticrime, é de 40 anos.","a":true,"j":"Correto."},{"blk":"B5","q":"O limite de 40 anos de unificação é utilizado para o cálculo de benefícios como o Livramento Condicional.","a":false,"j":"Para benefícios utiliza-se a pena real acumulada, e não o limite de unificação (Súmula 715 do STF)."},{"blk":"B5","q":"No caso de nova condenação por fato posterior ao início do cumprimento da pena, deve-se somar a nova pena ao restante da anterior, sem nova unificação.","a":false,"j":"Procede-se a uma nova unificação, desprezando-se o período de pena já cumprido (Art. 75, §2º, CP)."},{"blk":"B5","q":"Se faltar vaga em colônia penal agrícola para o regime semiaberto, o condenado pode ser mantido em regime fechado.","a":false,"j":"Segundo o RE 641.320/RS (SV 56), o condenado não pode ser mantido no fechado; deve-se buscar vaga em estabelecimento similar, regime mais benéfico ou prisão domiciliar monitorada."},{"blk":"B5","q":"É admitida a progressão per saltum (pular diretamente do regime fechado para o aberto) no Brasil.","a":false,"j":"É vedada (Súmula 491 do STJ). Exige-se o degrau do regime semiaberto."},{"blk":"B6","q":"As penas restritivas de direitos previstas no Art. 43 do CP incluem prestação pecuniária, perda de bens e valores, prestação de serviço à comunidade, interdição temporária de direitos e limitação de fim de semana.","a":true,"j":"Correto, conforme o rol do Art. 43 do CP."},{"blk":"B6","q":"As penas restritivas de direitos sempre têm a mesma duração da pena privativa de liberdade substituída, sem qualquer exceção.","a":false,"j":"Há exceção: a prestação de serviços à comunidade pode ser cumprida em tempo menor (mínimo metade) se a pena for superior a 1 ano."},{"blk":"B6","q":"São requisitos objetivos para a substituição da PPL por PRD: pena não superior a 4 anos, crime sem violência ou grave ameaça (salvo culposo) e réu não reincidente em crime doloso.","a":true,"j":"Correto, conforme os requisitos legais de substituição."},{"blk":"B6","q":"Se a pena for superior a 1 ano, ela pode ser substituída por 1 restritiva de direitos e multa, ou por 2 restritivas de direitos.","a":true,"j":"Correto, conforme a regra de substituição."},{"blk":"B6","q":"Se a pena for igual ou inferior a 1 ano, ela pode ser substituída por 2 penas restritivas de direitos cumulativas.","a":false,"j":"Nesse caso, a substituição só pode ser por 1 multa ou por 1 restritiva de direitos."},{"blk":"B6","q":"O reincidente em crime doloso nunca pode ter a PPL substituída por PRD, sem qualquer exceção.","a":false,"j":"Há exceção no Art. 44, §3º: o juiz pode substituir se, cumulativamente, a medida for socialmente recomendável e a reincidência não for específica."},{"blk":"B6","q":"Quando são aplicadas várias PRDs ao mesmo condenado, todas devem ser cumpridas necessariamente de forma simultânea.","a":false,"j":"São cumpridas simultaneamente se compatíveis entre si; as demais, sucessivamente."},{"blk":"B6","q":"O valor da prestação pecuniária varia entre 1 e 360 salários mínimos.","a":true,"j":"Correto."},{"blk":"B6","q":"Na conversão da PRD em PPL por descumprimento, o saldo mínimo de pena a cumprir é de 30 dias.","a":true,"j":"Correto (Art. 44, §4º, CP)."},{"blk":"B6","q":"Quando lei especial comina PPL cumulativamente com multa, é possível substituir a PPL por prestação pecuniária.","a":false,"j":"Não é permitido nesse caso, segundo o entendimento consolidado."},{"blk":"B6","q":"No concurso de crimes, as multas são somadas de forma integral e distinta, sem exasperação.","a":true,"j":"Correto (Art. 72, CP)."},{"blk":"B6","q":"A multa deve ser paga dentro de 10 dias após o trânsito em julgado da condenação.","a":true,"j":"Correto (Art. 50, CP)."},{"blk":"B6","q":"A pena de multa pode ser aumentada até o triplo se o juiz considerar ineficaz a pena diante da alta capacidade econômica do réu.","a":true,"j":"Correto (Art. 60, §1º, CP)."},{"blk":"B6","q":"O Ministério Público é o legitimado para executar a pena de multa perante o Juízo da Execução Criminal, atuando a Fazenda Pública apenas subsidiariamente se aquele for omisso.","a":true,"j":"Correto."},{"blk":"B6","q":"A execução da pena de multa pode ser extinta se o valor for inferior ao limite mínimo para ajuizamento de execução fiscal.","a":false,"j":"O STJ entende que a multa criminal tem caráter punitivo e pedagógico, não se submetendo a critérios de conveniência econômica da Fazenda Pública."},{"blk":"B6","q":"Após o Pacote Anticrime, o inadimplemento da pena de multa pode ser convertido em prisão, assim como ocorre com a PRD descumprida.","a":false,"j":"A PRD descumprida pode ser convertida em PPL, mas a multa inadimplida após o Pacote Anticrime é considerada dívida de valor, não convertendo em prisão."},{"blk":"B6","q":"O critério principal para a fixação da pena de multa é, sobretudo, a situação econômica do réu.","a":true,"j":"Correto (Art. 60, CP)."},{"blk":"B6","q":"A detração penal não se aplica à medida de segurança.","a":false,"j":"A detração se aplica: o tempo de internação em hospital de custódia cumprido antes da sentença é computado na medida de segurança."},{"blk":"B6","q":"A detração penal (Art. 42, CP) é o cômputo, na pena definitiva, do tempo de prisão provisória, administrativa ou internação cumprido antes da sentença.","a":true,"j":"Correto."},{"blk":"B7","q":"O Sursis Simples exige pena não superior a 2 anos e réu não reincidente em crime doloso, entre outros requisitos.","a":true,"j":"Correto (Art. 77, CP)."},{"blk":"B7","q":"O Sursis Etário ou de Saúde exige pena não superior a 4 anos, com suspensão de 4 a 6 anos, para condenado maior de 70 anos ou por razões de saúde.","a":true,"j":"Correto, diferenciando-se do Sursis Simples (pena até 2 anos, suspensão de 2 a 4 anos)."},{"blk":"B7","q":"O Sursis pode ser concedido mesmo quando for cabível a substituição da pena por restritivas de direitos.","a":false,"j":"O Sursis é subsidiário: só cabe se não for indicada ou cabível a substituição do Art. 44 do CP."},{"blk":"B7","q":"A reincidência em crime culposo impede a concessão do Sursis.","a":false,"j":"O Art. 77, I, CP veda o Sursis apenas ao reincidente em crime doloso."},{"blk":"B7","q":"Condenação anterior apenas à pena de multa impede a concessão do Sursis.","a":false,"j":"Não impede, conforme o Art. 77, §1º, CP."},{"blk":"B7","q":"No primeiro ano do Sursis, as condições de prestação de serviços à comunidade e limitação de fim de semana devem ser cumpridas cumulativamente.","a":false,"j":"São alternativas: o condenado deve cumprir uma ou outra."},{"blk":"B7","q":"O juiz pode fixar outras condições além das previstas no Art. 78 do CP.","a":true,"j":"Correto (Art. 79, CP)."},{"blk":"B7","q":"No Sursis Especial (Art. 78, §2º), as condições (proibição de frequentar lugares, não se ausentar da comarca e comparecimento mensal) são alternativas entre si.","a":false,"j":"São cumulativas: todas devem ser cumpridas conjuntamente."},{"blk":"B7","q":"Se o beneficiário do Sursis estiver sendo processado por outro crime, o prazo do benefício é prorrogado automaticamente até o julgamento definitivo desse novo processo.","a":true,"j":"Correto (Art. 81, §2º, CP)."},{"blk":"B7","q":"A revogação do Sursis é obrigatória em caso de condenação irrecorrível por crime doloso, frustração da execução da multa/reparação do dano sem justificativa, ou descumprimento da PSC/LFD do primeiro ano.","a":true,"j":"Correto, conforme as hipóteses de revogação obrigatória."},{"blk":"B7","q":"O descumprimento de qualquer outra condição imposta no Sursis gera revogação obrigatória.","a":false,"j":"Nesse caso, a revogação é facultativa."},{"blk":"B7","q":"A condenação irrecorrível por crime culposo gera revogação obrigatória do Sursis.","a":false,"j":"Gera revogação facultativa. A revogação obrigatória só ocorre em condenação por crime doloso."},{"blk":"B7","q":"Se o condenado descumpre a prestação de serviços à comunidade do primeiro ano do Sursis, a revogação é facultativa.","a":false,"j":"É obrigatória, conforme o Art. 81, III, CP."},{"blk":"B7","q":"Não cabe Sursis em condenações decorrentes da Lei Maria da Penha.","a":false,"j":"Cabe, desde que preenchidos os requisitos do Art. 77 do CP."},{"blk":"B7","q":"O Sursis Ambiental (Lei 9.605/98) tem o mesmo limite de pena do Sursis do CP geral, ou seja, 2 anos.","a":false,"j":"O Sursis Ambiental admite pena não superior a 3 anos, diferente do limite de 2 anos do CP geral."},{"blk":"B8","q":"No Livramento Condicional, as frações exigidas são: primário mais de 1/3, reincidente em doloso mais de 1/2, e hediondo/equiparado primário mais de 2/3, sendo vedado ao reincidente específico em hediondo.","a":true,"j":"Correto, conforme as frações legais e a vedação absoluta ao reincidente específico em crime hediondo."},{"blk":"B8","q":"O condenado primário, em crime comum, precisa cumprir mais de 1/3 da pena para requerer o Livramento Condicional.","a":true,"j":"Correto, é a fração para o condenado primário sem outras circunstâncias especiais."},{"blk":"B8","q":"O reincidente em crime doloso precisa cumprir mais de 1/2 da pena para requerer o Livramento Condicional.","a":true,"j":"Correto, é a fração aplicável ao reincidente em crime doloso (crime comum)."},{"blk":"B8","q":"O condenado primário por crime hediondo ou equiparado precisa cumprir mais de 2/3 da pena para requerer o Livramento Condicional.","a":true,"j":"Correto, é a fração majorada para crimes hediondos/equiparados, aplicável ao réu primário."},{"blk":"B8","q":"O reincidente específico em crime hediondo ou equiparado pode obter Livramento Condicional cumprindo mais de 2/3 da pena.","a":false,"j":"É vedação absoluta: o reincidente específico em crime hediondo não pode obter Livramento Condicional, independentemente da fração cumprida."},{"blk":"B8","q":"Para requerer o Livramento Condicional, o condenado não pode ter cometido falta grave nos últimos 12 meses.","a":true,"j":"Correto (Art. 83, III, 'b', CP)."},{"blk":"B8","q":"Segundo a Súmula 617 do STJ, se o período de prova do Livramento Condicional terminar sem suspensão ou revogação, a punibilidade é extinta automaticamente.","a":true,"j":"Correto."},{"blk":"B8","q":"A falta grave interrompe o prazo para a obtenção do Livramento Condicional.","a":false,"j":"Segundo a Súmula 441 do STJ, a falta grave não interrompe o prazo para o LC, diferente do que ocorre na progressão de regime."},{"blk":"B8","q":"O juiz pode fixar a data da fuga como nova data-base para o cálculo do prazo do Livramento Condicional.","a":false,"j":"O STJ entende que fixar nova data-base para o LC em razão de falta grave ofende o Princípio da Legalidade."},{"blk":"B8","q":"Se o Livramento Condicional for revogado, o tempo em que o condenado esteve solto é sempre descontado da pena.","a":false,"j":"A regra é não descontar (perde-se o tempo em liberdade). Exceção: se a revogação decorrer de crime anterior ao benefício, o tempo é computado na pena."},{"blk":"B8","q":"As penas de infrações diversas são somadas para fins de cálculo do Livramento Condicional.","a":true,"j":"Correto (Art. 84, CP), verificando-se o mínimo de 2 anos sobre o total somado."},{"blk":"B8","q":"O bom comportamento do condenado é dispensável para a concessão do Livramento Condicional.","a":false,"j":"É requisito subjetivo essencial e indispensável (Art. 83, III, 'a', CP)."},{"blk":"B8","q":"As obrigações de recolher-se à habitação em hora fixada e não frequentar certos lugares são automáticas no Livramento Condicional, independentemente de imposição judicial.","a":false,"j":"São obrigações facultativas, que dependem de imposição judicial fundamentada (Art. 132, §2º, LEP)."},{"blk":"B8","q":"Se o período de prova do Livramento Condicional termina sem revogação, mas a decisão judicial de extinção demora a sair, considera-se extinta a punibilidade na data em que o período de prova terminou.","a":true,"j":"Correto. A decisão judicial posterior é meramente declaratória e retroage ao fim do livramento (Art. 90, CP)."},{"blk":"B8","q":"O tempo em que o condenado esteve em Livramento Condicional (sem revogação) conta para o período depurador da reincidência.","a":true,"j":"Correto (Art. 64, I, CP)."},{"blk":"B9","q":"No Concurso Material de Crimes, as penas são aplicadas cumulativamente (somadas), executando-se primeiro a pena de reclusão em caso de concurso com detenção.","a":true,"j":"Correto (Art. 69, CP)."},{"blk":"B9","q":"No Concurso Formal Próprio, aplica-se a mais grave das penas (ou uma delas se iguais), aumentada de 1/6 até a metade.","a":true,"j":"Correto (Art. 70, CP)."},{"blk":"B9","q":"No Concurso Formal Impróprio, as penas são exasperadas (aumentadas de 1/6 até a metade), assim como no concurso formal próprio.","a":false,"j":"No concurso formal impróprio (desígnios autônomos), as penas são somadas (cúmulo material), e não exasperadas."},{"blk":"B9","q":"No Concurso Material Benéfico, se a exasperação do concurso formal resulta em pena superior à soma das penas do concurso material, aplica-se o concurso material.","a":true,"j":"Correto (Art. 70, parágrafo único, CP)."},{"blk":"B9","q":"No Crime Continuado, aplica-se a pena de um só dos crimes, aumentada de 1/6 a 2/3.","a":true,"j":"Correto (Art. 71, CP)."},{"blk":"B9","q":"O intervalo máximo entre as condutas aceito pelo STJ no crime continuado é de 30 dias, sendo o percentual de aumento fixado com base no número de crimes cometidos.","a":true,"j":"Correto (Súmula 659 do STJ)."},{"blk":"B9","q":"O Crime Continuado Específico exige crimes culposos, contra a mesma vítima, permitindo aumento de pena até o triplo.","a":false,"j":"O crime continuado específico exige crimes dolosos, contra vítimas diferentes, cometidos com violência ou grave ameaça, permitindo aumento até o triplo."},{"blk":"B9","q":"Admite-se a continuidade delitiva entre Roubo e Latrocínio, por serem do mesmo artigo do Código Penal.","a":false,"j":"O STJ exige crimes da mesma espécie. Roubo e Latrocínio, embora do mesmo gênero (patrimônio), são espécies diferentes, pois o latrocínio tutela também a vida."},{"blk":"B9","q":"Para fins de crime continuado, 'mesmo gênero' e 'mesma espécie' são conceitos idênticos, bastando que os crimes protejam o mesmo bem jurídico.","a":false,"j":"São conceitos diferentes: mesmo gênero significa apenas proteger o mesmo bem jurídico (mesmo em tipos penais diferentes, como Roubo e Latrocínio); mesma espécie exige crimes idênticos ou muito semelhantes, no mesmo tipo penal (como Furto simples e Furto qualificado). O Art. 71 do CP exige mesma espécie, não bastando o mesmo gênero."},{"blk":"B9","q":"Quando há Concurso Formal e Crime Continuado na mesma situação, aplicam-se cumulativamente os dois institutos.","a":false,"j":"Segundo o STJ, aplica-se apenas o aumento da continuidade delitiva, afastando-se o concurso formal para evitar bis in idem."},{"blk":"B9","q":"Roubo praticado mediante uma só ação contra múltiplas vítimas (patrimônios distintos) configura Concurso Formal Impróprio.","a":true,"j":"Correto, pois há desígnios autônomos contra patrimônios distintos, aplicando-se o cúmulo material (soma de penas)."},{"blk":"B9","q":"Segundo o Tema 1192 do STJ, o roubo contra vítimas distintas na mesma residência configura crime único.","a":false,"j":"Configura Concurso Formal Próprio com exasperação da pena, pois o patrimônio é individual, mesmo entre membros de uma mesma família no mesmo contexto."},{"blk":"B9","q":"No concurso de crimes, se o agente for condenado a PPL não suspensa por um dos crimes, ainda assim é possível substituir a pena dos demais crimes por PRD.","a":false,"j":"Se for aplicada PPL não suspensa por um dos crimes, a substituição por PRD é incabível para todos os demais crimes (Art. 69, §1º, CP)."},{"blk":"B9","q":"No concurso formal, a pena de multa segue a regra da exasperação aplicada à pena privativa de liberdade.","a":false,"j":"A multa segue regra própria (Art. 72, CP): as multas são sempre somadas, e não exasperadas."},{"blk":"B9","q":"Segundo a Súmula 659 do STJ, para 2 crimes em continuidade delitiva o aumento aplicável é de 1/6.","a":true,"j":"Correto, conforme a escala da Súmula 659 do STJ."},{"blk":"B9","q":"Segundo a Súmula 659 do STJ, para 3 crimes em continuidade delitiva o aumento aplicável é de 1/6.","a":false,"j":"Para 3 crimes o aumento correto é de 1/5, e não 1/6 (essa fração é para 2 crimes)."},{"blk":"B9","q":"Segundo a Súmula 659 do STJ, para 4 crimes em continuidade delitiva o aumento aplicável é de 1/4.","a":true,"j":"Correto, conforme a escala da Súmula 659 do STJ."},{"blk":"B9","q":"Segundo a Súmula 659 do STJ, para 5 crimes em continuidade delitiva o aumento aplicável é de 1/4.","a":false,"j":"Para 5 crimes o aumento correto é de 1/3, e não 1/4 (essa fração é para 4 crimes)."},{"blk":"B9","q":"Segundo a Súmula 659 do STJ, para 6 crimes em continuidade delitiva o aumento aplicável é de 1/2.","a":true,"j":"Correto, conforme a escala da Súmula 659 do STJ."},{"blk":"B9","q":"Segundo a Súmula 659 do STJ, para 7 ou mais crimes em continuidade delitiva o aumento aplicável é de 1/2.","a":false,"j":"Para 7 ou mais crimes o aumento correto é de 2/3, e não 1/2 (essa fração é para 6 crimes)."},{"blk":"B9","q":"No caso de Klaus (que aciona um botão causando 10 mortes intencionais com uma só ação), configura-se Concurso Formal Impróprio.","a":true,"j":"Correto: uma só ação, mas com desígnios autônomos para cada resultado, aplicando-se a soma das penas."},{"blk":"B9","q":"No caso de Thomas (um só tiro que mata duas pessoas, sendo uma delas não intencionalmente), configura-se Concurso Material.","a":false,"j":"Configura-se Concurso Formal Próprio: uma só ação, sem desígnio autônomo para o segundo resultado, aplicando-se a exasperação."},{"blk":"B9","q":"No caso de Mark (que dispara um tiro em cada uma de 8 celas diferentes), configura-se Concurso Formal.","a":false,"j":"Configura-se Concurso Material, pois há pluralidade de ações (um tiro por cela), com soma das penas."},{"blk":"B9","q":"Roubo e extorsão praticados no mesmo contexto configuram crime único.","a":false,"j":"Configuram Concurso Material (Art. 69, CP), pois o STJ os considera de espécies diferentes, não admitindo crime único nem continuidade delitiva."},{"blk":"B9","q":"Após a Lei 12.015/2009, Estupro e Atentado Violento ao Pudor contra a mesma vítima, no mesmo contexto, geram concurso de crimes.","a":false,"j":"Configuram crime único, pois o Art. 213 do CP passou a ser um tipo misto alternativo."},{"blk":"B9","q":"O adulto que pratica crime na companhia de menor responde em Concurso Material com a corrupção de menores (Art. 244-B, ECA).","a":true,"j":"Correto, conforme entendimento do STJ: somam-se as penas do crime praticado e da corrupção de menores."},{"blk":"B10","q":"O Código Penal adota a Teoria Pluralista como regra no concurso de pessoas, com exceção da Teoria Monista em casos como o aborto consensual.","a":false,"j":"É o inverso: a regra é a Teoria Monista (todos respondem pelo mesmo crime); a Teoria Pluralista é exceção, como no aborto consensual (gestante x médico)."},{"blk":"B10","q":"Os requisitos do concurso de pessoas são: pluralidade de agentes, relevância causal das condutas, vínculo subjetivo (liame), identidade de infração e fato punível.","a":true,"j":"Correto, são os 5 requisitos do concurso de pessoas."},{"blk":"B10","q":"Na Autoria Mediata, há concurso de agentes pleno, pois existe liame subjetivo entre o autor e o instrumento utilizado.","a":false,"j":"Não há concurso de agentes na autoria mediata, pois falta justamente o liame subjetivo entre o autor e o instrumento (pessoa sem dolo, sem culpa ou coagida)."},{"blk":"B10","q":"Na Autoria Colateral, os agentes atuam visando o mesmo resultado, mas sem liame subjetivo entre eles, respondendo cada um pelo que causou.","a":true,"j":"Correto. Se não se souber quem causou o resultado, há autoria incerta e ambos respondem por tentativa."},{"blk":"B10","q":"A Teoria do Domínio do Fato se aplica também aos crimes culposos.","a":false,"j":"O domínio do fato só se aplica aos crimes dolosos."},{"blk":"B10","q":"A Teoria do Domínio do Fato autoriza o Ministério Público a oferecer denúncia genérica, sem descrição individualizada da conduta de cada réu.","a":false,"j":"É indispensável a descrição mínima da conduta e do nexo causal de cada réu; a teoria não supre a ausência de individualização."},{"blk":"B10","q":"O mandante que contrata um pistoleiro livre e imputável é considerado autor mediato, segundo a Teoria do Domínio do Fato.","a":false,"j":"É considerado partícipe (instigador). Para ser autor mediato, o executor teria que ser um instrumento sem liberdade; sendo livre e imputável, falta o domínio da vontade."},{"blk":"B10","q":"Os Executores Fungíveis, na teoria de Roxin, garantem ao mandante o domínio da vontade em organizações criminosas, pois se um não cumprir a ordem, outro imediatamente cumprirá.","a":true,"j":"Correto, é o fundamento do Domínio da Organização de Roxin."},{"blk":"B10","q":"A Teoria do Domínio da Organização, de Roxin, pode ser aplicada a empresas legítimas.","a":false,"j":"Foi formulada para aparatos organizados de poder que atuam à margem do Direito. Em empresas legítimas usa-se coautoria ou autoria mediata comum."},{"blk":"B10","q":"No Domínio Funcional do Fato, se um dos agentes não realizar o verbo núcleo do tipo, mas exercer função relevante no plano conjunto, ele é coautor, e não mero partícipe.","a":true,"j":"Correto, ocorre a imputação recíproca (o ato de um vale para todos)."},{"blk":"B10","q":"No concurso de pessoas, as circunstâncias objetivas comunicam-se se o comparsa as conhecia, e as circunstâncias subjetivas não se comunicam, salvo quando elementares do crime.","a":true,"j":"Correto (Art. 30, CP)."},{"blk":"B10","q":"A qualidade de funcionário público em crime funcional não se comunica ao partícipe particular.","a":false,"j":"Comunica-se, pois é elementar do crime (Art. 30, CP)."},{"blk":"B10","q":"Na Cooperação Dolosamente Distinta, o agente que quis participar de crime menos grave sempre responde pelo crime mais grave efetivamente ocorrido.","a":false,"j":"Ele responde pelo crime menos grave que quis praticar, com aumento de pena até a metade se o resultado mais grave era previsível (Art. 29, §2º, CP)."},{"blk":"B10","q":"No caso em que A troca as balas de uma arma por munição falsa e C, sem saber, atira e mata B, configura-se Autoria Colateral entre A e C.","a":false,"j":"Configura-se Autoria Mediata: A usou C como instrumento sem dolo (instrumento impunível), não havendo liame subjetivo que caracterize autoria colateral."},{"blk":"B10","q":"No caso de João, Pedro e Ana, que planejaram e executaram um roubo com divisão de tarefas, configura-se Autoria Colateral.","a":false,"j":"Configura-se Concurso de Pessoas (Art. 29, CP), pois há pluralidade, liame subjetivo, relevância causal e unidade de infração — não há autoria colateral, pois há liame entre eles."},{"blk":"B11","q":"Maus antecedentes são valorados como circunstância judicial na 1ª fase da dosimetria, enquanto a reincidência é agravante genérica na 2ª fase, não podendo um servir para justificar o outro.","a":true,"j":"Correto. Usar o mesmo fato para ambas as finalidades configuraria bis in idem (Súmula 241 do STJ)."},{"blk":"B11","q":"As três circunstâncias preponderantes na 2ª fase da dosimetria (Art. 67, CP) são a reincidência, a personalidade do agente e os motivos determinantes do crime.","a":true,"j":"Correto."},{"blk":"B11","q":"A reincidência é uma das circunstâncias preponderantes na 2ª fase da dosimetria (Art. 67, CP).","a":true,"j":"Correto, é uma das 3 circunstâncias preponderantes."},{"blk":"B11","q":"A personalidade do agente é uma das circunstâncias preponderantes na 2ª fase da dosimetria (Art. 67, CP).","a":true,"j":"Correto, é uma das 3 circunstâncias preponderantes."},{"blk":"B11","q":"Os motivos determinantes do crime são uma das circunstâncias preponderantes na 2ª fase da dosimetria (Art. 67, CP).","a":true,"j":"Correto, é uma das 3 circunstâncias preponderantes."},{"blk":"B11","q":"A Atenuante Inominada (Art. 66, CP) permite ao juiz atenuar a pena com base em circunstância relevante mesmo que não prevista expressamente em lei.","a":true,"j":"Correto."},{"blk":"B11","q":"O período depurador da reincidência é de 5 anos entre o cumprimento/extinção da pena e a infração posterior.","a":true,"j":"Correto (Art. 64, I, CP)."},{"blk":"B11","q":"O prazo depurador de 5 anos previsto no Art. 64, I, do CP aplica-se também aos maus antecedentes na 1ª fase da dosimetria.","a":false,"j":"Segundo o STF (RE 593.818), os maus antecedentes seguem o sistema da perpetuidade; o prazo de 5 anos serve apenas para afastar a reincidência."},{"blk":"B11","q":"A agravante da reincidência não se aplica a crimes culposos.","a":false,"j":"Aplica-se também aos crimes culposos, pois o Art. 63 do CP não faz distinção."},{"blk":"B11","q":"A premeditação do crime é uma das agravantes genéricas previstas nos Arts. 61 e 62 do CP.","a":false,"j":"Não consta no rol dos Arts. 61 e 62; pode ser valorada apenas na 1ª fase (circunstâncias judiciais)."},{"blk":"B11","q":"Um réu reincidente sempre terá a pena-base fixada acima do mínimo legal, em razão da reincidência.","a":false,"j":"A reincidência é analisada na 2ª fase. Se todas as circunstâncias judiciais do Art. 59 forem favoráveis, a pena-base pode ficar no mínimo legal."},{"blk":"B11","q":"A reincidência (agravante preponderante) e a confissão espontânea (atenuante) podem se compensar na 2ª fase da dosimetria.","a":true,"j":"Correto, segundo o STJ (EREsp 1.154.752)."},{"blk":"B11","q":"As causas de aumento e diminuição da 3ª fase da dosimetria podem levar a pena para além do máximo ou aquém do mínimo legal.","a":true,"j":"Correto, diferente das agravantes/atenuantes da 2ª fase."},{"blk":"B11","q":"As atenuantes da 2ª fase da dosimetria podem reduzir a pena abaixo do mínimo legal.","a":false,"j":"A Súmula 231 do STJ veda essa redução: nenhuma atenuante pode levar a pena para aquém do mínimo previsto em lei."},{"blk":"B11","q":"No concurso de causas de aumento/diminuição da Parte Especial, o juiz é obrigado a aplicar todas cumulativamente.","a":false,"j":"O Art. 68, parágrafo único, CP permite ao juiz limitar-se a um só aumento ou uma só diminuição, prevalecendo a que mais aumente ou mais diminua."},{"blk":"B11","q":"A agravante criada pela Lei 15.159/2025 refere-se ao crime cometido nas dependências de instituição de saúde.","a":false,"j":"A nova agravante (Art. 61, II, 'm', CP) refere-se a instituição de ENSINO, e não de saúde."},{"blk":"B11","q":"É agravante genérica prevalecer-se o agente de relações de amizade com a vítima (Art. 61, II, 'f', CP).","a":false,"j":"A agravante do Art. 61, II, 'f', CP refere-se a prevalecer-se de relações de HOSPITALIDADE, e não de amizade."},{"blk":"B11","q":"É agravante genérica o fato de o ofendido estar sob a imediata proteção da autoridade (Art. 61, II, 'i', CP).","a":true,"j":"Correto, é uma das agravantes previstas no Art. 61, II, 'i', CP."},{"blk":"B11","q":"A embriaguez do agente é sempre agravante genérica, independentemente de ter sido preordenada.","a":false,"j":"A embriaguez só é agravante quando preordenada, isto é, quando o agente se embriaga propositalmente para cometer o crime ou criar coragem (Art. 61, II, 'l', CP)."},{"blk":"B11","q":"A embriaguez voluntária ou culposa isenta o agente de pena.","a":false,"j":"Não isenta. O CP adota a teoria da actio libera in causa: se o agente era livre ao decidir beber, responde pelo dolo ou culpa do resultado final."},{"blk":"B11","q":"A embriaguez acidental completa, decorrente de caso fortuito ou força maior, pode isentar o agente de pena.","a":true,"j":"Correto (Art. 28, §1º, CP), quando totalmente incapaz de entender o caráter ilícito do fato."},{"blk":"B12","q":"Os efeitos genéricos (automáticos) da condenação incluem tornar certa a obrigação de indenizar o dano e a perda em favor da União dos instrumentos do crime e do produto/proveito auferido.","a":true,"j":"Correto (Art. 91, CP). Se o produto não for encontrado ou estiver no exterior, cabe a perda de bens equivalentes."},{"blk":"B12","q":"Tornar certa a obrigação de indenizar o dano causado pelo crime é efeito automático da condenação (Art. 91, I, CP).","a":true,"j":"Correto, é o primeiro dos efeitos genéricos automáticos da condenação."},{"blk":"B12","q":"A perda em favor da União dos instrumentos do crime e do produto ou proveito auferido pelo agente é efeito automático da condenação (Art. 91, II, CP).","a":true,"j":"Correto, é o segundo dos efeitos genéricos automáticos da condenação. Se o produto não for encontrado ou estiver no exterior, cabe a perda de bens equivalentes."},{"blk":"B12","q":"A perda do cargo público exige pena igual ou superior a 1 ano em crimes com abuso de poder ou violação de dever para com a Administração Pública, ou pena superior a 4 anos nos demais casos, não sendo automática.","a":true,"j":"Correto (Art. 92, I, CP). Deve ser motivadamente declarada na sentença."},{"blk":"B12","q":"Nos crimes praticados com abuso de poder ou violação de dever para com a Administração Pública, a perda do cargo público exige pena igual ou superior a 1 ano.","a":true,"j":"Correto (Art. 92, I, 'a', CP)."},{"blk":"B12","q":"Nos demais crimes (sem abuso de poder ou violação de dever para com a Administração Pública), a perda do cargo público exige pena superior a 4 anos.","a":true,"j":"Correto (Art. 92, I, 'b', CP)."},{"blk":"B12","q":"A perda de cargo público é efeito automático da condenação, independentemente de declaração expressa na sentença.","a":false,"j":"Não é automática; é efeito específico que deve ser motivado e declarado expressamente na sentença."},{"blk":"B12","q":"O Confisco Alargado (Art. 91-A, CP) cabe apenas para crimes com pena máxima superior a 6 anos de reclusão.","a":true,"j":"Correto. Consiste na perda de bens correspondentes à diferença entre o patrimônio do condenado e seus rendimentos lícitos."},{"blk":"B12","q":"O Confisco Alargado exige que o Ministério Público prove que cada bem é produto direto do crime.","a":false,"j":"Dispensa a prova do nexo causal direto; basta demonstrar que o patrimônio total é incompatível com o rendimento lícito do condenado."},{"blk":"B12","q":"Para fins de Confisco Alargado, o conceito de patrimônio do condenado inclui bens transferidos gratuitamente a terceiros a partir do início da atividade criminal.","a":true,"j":"Correto, além dos bens de sua titularidade e dos bens sobre os quais tenha domínio ou benefício."},{"blk":"B12","q":"Para fins de Confisco Alargado, integram o patrimônio do condenado os bens de sua titularidade formal.","a":true,"j":"Correto, é uma das 3 categorias de bens que integram o patrimônio para fins de confisco alargado."},{"blk":"B12","q":"Para fins de Confisco Alargado, integram o patrimônio do condenado os bens sobre os quais ele tenha domínio ou benefício, mesmo estando em nome de terceiros.","a":true,"j":"Correto, é uma das 3 categorias de bens que integram o patrimônio para fins de confisco alargado."},{"blk":"B12","q":"Para fins de Confisco Alargado, integram o patrimônio do condenado os bens transferidos a terceiros a título gratuito ou por valor irrisório a partir do início da atividade criminal.","a":true,"j":"Correto, é uma das 3 categorias de bens que integram o patrimônio para fins de confisco alargado."},{"blk":"B12","q":"O Confisco Alargado pode ser decretado de ofício pelo juiz.","a":false,"j":"Deve ser requerido expressamente pelo Ministério Público por ocasião do oferecimento da denúncia."},{"blk":"B12","q":"Os instrumentos de organizações criminosas e milícias são perdidos em favor da União ou do Estado independentemente de perigo à segurança, moral ou ordem pública.","a":true,"j":"Correto, efeito direto do Pacote Anticrime."},{"blk":"B12","q":"Na Transação Penal, se o réu cumpre o acordo e a punibilidade é extinta, o juiz pode decretar o confisco de bens apreendidos.","a":false,"j":"O STF (RE 795.567) decidiu que o confisco do Art. 91 do CP exige sentença condenatória, o que não ocorre na transação penal."},{"blk":"B12","q":"A suspensão dos direitos políticos por condenação criminal atinge apenas as penas privativas de liberdade, e não as penas restritivas de direitos.","a":false,"j":"Segundo o STF (Tema 376), o Art. 15, III, CF atinge tanto PPL quanto PRD enquanto durarem os efeitos da condenação."},{"blk":"B13","q":"A Medida de Segurança tem prazo mínimo de 1 a 3 anos, perícia médica anual e liberação sempre condicional, com período de observação de 1 ano.","a":true,"j":"Correto (Art. 97, CP)."},{"blk":"B13","q":"O prazo mínimo de duração da Medida de Segurança varia de 1 a 3 anos.","a":true,"j":"Correto (Art. 97, §1º, CP)."},{"blk":"B13","q":"A perícia médica para verificação da cessação de periculosidade na Medida de Segurança deve ser realizada anualmente.","a":true,"j":"Correto (Art. 97, §2º, CP)."},{"blk":"B13","q":"A liberação do agente submetido à Medida de Segurança é sempre condicional, sujeita a período de observação de 1 ano.","a":true,"j":"Correto (Art. 97, §3º, CP)."},{"blk":"B13","q":"Segundo o STJ, a escolha entre internação e tratamento ambulatorial deve ser baseada na gravidade abstrata do crime cometido.","a":false,"j":"Deve ser baseada na periculosidade do agente e na necessidade do tratamento médico adequado, não na gravidade abstrata do delito."},{"blk":"B13","q":"A Sentença Absolutória Imprópria absolve o réu por ser inimputável, mas lhe impõe medida de segurança em razão de sua periculosidade.","a":true,"j":"Correto (Súmula 422 do STF: a absolvição criminal não prejudica a medida de segurança)."},{"blk":"B13","q":"O semi-imputável pode receber, simultaneamente, pena reduzida e medida de segurança.","a":false,"j":"O CP adota o sistema vicariante (Art. 98): o juiz substitui a pena por medida de segurança, nunca aplicando as duas ao mesmo tempo."},{"blk":"B13","q":"Sociopatas são sempre considerados inimputáveis.","a":false,"j":"O sociopata tem inteligência normal, mas déficit ético, sendo geralmente imputável ou semi-imputável."},{"blk":"B13","q":"A surdo-mudez gera inimputabilidade automática do agente.","a":false,"j":"O surdo-mudo só é inimputável se for inteiramente incapaz de entender o caráter ilícito do fato."},{"blk":"B13","q":"A emoção e a paixão excluem a imputabilidade do agente, segundo o Art. 28 do CP.","a":false,"j":"O Art. 28 do CP é expresso ao dizer que não excluem a responsabilidade; a emoção pode, quando muito, servir como atenuante."},{"blk":"B13","q":"O Perdão Judicial exige a concordância da vítima ou de sua família para ser concedido.","a":false,"j":"É ato unilateral do juiz, não exigindo concordância de ninguém."},{"blk":"B13","q":"A fixação da medida de segurança vincula-se à gravidade abstrata da pena cominada ao crime.","a":false,"j":"A medida de segurança foca na periculosidade do agente, e não na gravidade abstrata do delito."},{"blk":"B14","q":"O Código Penal adotou a Teoria Mista (Eclética/Unitária) sobre a finalidade da pena, atribuindo-lhe funções retributiva e preventiva.","a":true,"j":"Correto (Art. 59, CP: reprovação e prevenção)."},{"blk":"B14","q":"A Prevenção Geral Positiva tem como finalidade intimidar potenciais infratores por meio do medo da punição.","a":false,"j":"Essa é a função da Prevenção Geral Negativa. A Positiva busca reafirmar a validade e a vigência da norma perante a sociedade."},{"blk":"B14","q":"A Prevenção Geral Negativa busca reforçar a confiança da sociedade na validade das normas.","a":false,"j":"Essa é a função da Prevenção Geral Positiva. A Negativa busca intimidar potenciais infratores pelo medo da punição."},{"blk":"B14","q":"As cinco funções da pena são: Retributiva, Prevenção Geral Positiva, Prevenção Geral Negativa, Prevenção Especial Positiva e Prevenção Especial Negativa.","a":true,"j":"Correto, com focos no passado/culpa, sociedade e delinquente, respectivamente."},{"blk":"B14","q":"A Prevenção Geral volta-se para o delinquente, enquanto a Prevenção Especial volta-se para a sociedade.","a":false,"j":"É o inverso: Geral visa a sociedade; Especial visa o delinquente."},{"blk":"B14","q":"Na pena cominada (abstrata) predomina a Prevenção Geral; na pena aplicada (sentença), a função Retributiva e Prevenção Especial; e na pena executada, a Prevenção Especial Positiva (ressocialização).","a":true,"j":"Correto, são os três momentos e funções predominantes da pena."},{"blk":"B14","q":"Segundo Paulo Queiroz, o juiz pode utilizar a sentença para fins de Prevenção Geral.","a":false,"j":"Não pode, pois isso violaria a proporcionalidade e a dignidade humana, usando o sentenciado como instrumento para fins sociais."},{"blk":"B14","q":"Immanuel Kant, na Teoria Absoluta da pena, sustenta que ela é um imperativo categórico (retribuição ética), repudiando o uso do homem como meio.","a":true,"j":"Correto."},{"blk":"B14","q":"No Finalismo, o Dolo está na Culpabilidade e a Potencial Consciência da Ilicitude está no Tipo (Fato Típico).","a":false,"j":"É o inverso: o Dolo (natural) está no Tipo, e a Potencial Consciência da Ilicitude é elemento da Culpabilidade."},{"blk":"B14","q":"Crime Vago é aquele cujo sujeito passivo é uma coletividade destituída de personalidade jurídica.","a":true,"j":"Correto (ex.: crimes contra a paz pública, milícia privada)."},{"blk":"B14","q":"Crime Oco é sinônimo de Crime Impossível.","a":true,"j":"Correto (Art. 17, CP): ocorre por ineficácia absoluta do meio ou impropriedade absoluta do objeto."},{"blk":"B14","q":"Crime a Prazo é aquele cuja consumação ou qualificadora depende do decurso de um tempo legal.","a":true,"j":"Correto (ex.: lesão grave pela incapacidade por mais de 30 dias)."},{"blk":"B14","q":"Crimes Formais e Crimes de Resultado Cortado são conceitos opostos entre si.","a":false,"j":"São sinônimos: o tipo descreve conduta e resultado, mas a consumação ocorre no momento da conduta, sendo o resultado naturalístico dispensável."},{"blk":"B14","q":"A Prevenção Especial Negativa ressocializa o delinquente, enquanto a Positiva neutraliza a reincidência.","a":false,"j":"É o inverso: a Positiva ressocializa/reeduca; a Negativa neutraliza/evita a reincidência."},{"blk":"B14","q":"O Garantismo Positivo (Binocular) exige apenas que o Estado não puna indevidamente, sem qualquer dever de proteção dos bens jurídicos.","a":false,"j":"O garantismo positivo exige também que o Estado proteja de forma suficiente os bens jurídicos contra agressões de terceiros (proibição da proteção insuficiente)."},{"blk":"B15","q":"No caso de João (roubo tentado, 20 anos, primário), o mínimo e máximo de dias-multa são 10 e 360, respectivamente.","a":true,"j":"Correto (Art. 49, CP)."},{"blk":"B15","q":"No caso de João, o regime pode ser fixado com base na gravidade abstrata do crime de roubo.","a":false,"j":"Não pode. As Súmulas 718 e 719 do STF vedam regime mais gravoso baseado na gravidade abstrata."},{"blk":"B15","q":"No caso de João, a menoridade de 20 anos configura causa de diminuição de pena na 3ª fase da dosimetria.","a":false,"j":"Configura atenuante da 2ª fase (Art. 65, I, CP), e não causa de diminuição da 3ª fase."},{"blk":"B15","q":"No caso de Carlos, que foi humilhado, buscou uma arma e retornou 40 minutos depois para atirar, há causa de diminuição de pena pelo homicídio privilegiado.","a":false,"j":"Há apenas atenuante (Art. 65, III, 'c', CP). O homicídio privilegiado exige reação sob domínio de violenta emoção logo em seguida à injusta provocação; os 40 minutos rompem essa imediatidade."},{"blk":"B15","q":"No caso de Caio, Tício e Mévio (agressão a torcedor após gesto de Mévio), configura-se autoria colateral, pois não houve liame subjetivo entre eles.","a":false,"j":"Configura-se concurso de pessoas por adesão, pois houve liame subjetivo (o gesto de Mévio foi seguido conscientemente pelos demais)."},{"blk":"B15","q":"No caso de Luisinho Nove Dedos, que praticou roubo na companhia de menores, ele responde por roubo em concurso formal com corrupção de menores.","a":true,"j":"Correto, conforme a Súmula 500 do STJ."},{"blk":"B15","q":"Segundo a Súmula 500 do STJ, a corrupção de menores exige a efetiva corrupção do menor para se consumar.","a":false,"j":"É crime formal: consuma-se com a mera participação do menor na infração, independentemente de sua efetiva corrupção."},{"blk":"B15","q":"No caso de Luisinho INSS (pena de 6 anos, réu primário), o regime inicial correto é o fechado.","a":false,"j":"O regime inicial correto é o semiaberto (Art. 33, §2º, 'b', CP), pois a pena está entre 4 e 8 anos e o réu é primário."},{"blk":"B15","q":"No caso de Carlos Augusto (denúncia rejeitada, TJ anulou a decisão, juízo recebeu a denúncia novamente), foi a citação do réu que interrompeu a prescrição.","a":false,"j":"Foi a segunda decisão do juízo de 1º grau recebendo novamente a denúncia que interrompeu a prescrição. A rejeição anterior não interrompe, e a citação não é causa interruptiva."},{"blk":"B15","q":"No caso de Michel (que manda cortar árvore em APP) e Alexandre (que executa a ordem), pela teoria objetivo-formal, Michel é considerado autor do crime.","a":false,"j":"Pela teoria objetivo-formal, Michel é partícipe (instigador), pois foi Alexandre quem executou o verbo núcleo do tipo; o domínio do fato não se altera, já que Alexandre é livre e imputável."},{"blk":"B15","q":"Segundo o Tema 1.168 do STJ, armazenar e transmitir pornografia infantil no mesmo computador configura crime único.","a":false,"j":"Configura Concurso Material, pois são crimes autônomos com verbos distintos; o armazenamento não é fase necessária da transmissão."},{"blk":"B15","q":"Invadir dispositivo informático para obter comunicações telemáticas pretéritas (já armazenadas) configura o crime de interceptação telefônica.","a":false,"j":"Configura o crime de Invasão de Dispositivo Informático (Art. 154-A, CP), qualificado se houver obtenção de conteúdo. A interceptação exige o fluxo em tempo real."},{"blk":"B15","q":"O furto de energia elétrica (Art. 155, §3º, CP) é classificado pela doutrina como crime instantâneo.","a":false,"j":"É classificado como crime permanente (ou a termo), pois a subtração se protrai no tempo enquanto durar a ligação clandestina."},{"blk":"B15","q":"A fraude processual (Art. 347, CP) praticada antes do início do processo penal tem sua pena aplicada em dobro.","a":true,"j":"Correto (Art. 347, parágrafo único, CP), mesmo que o processo ainda não tenha sido iniciado."},{"blk":"B15","q":"O Sursis Ambiental admite pena não superior a 3 anos, diferente dos 2 anos previstos no CP geral.","a":true,"j":"Correto (Art. 16, Lei 9.605/98)."},{"blk":"B15","q":"O dia-multa na Lei de Drogas varia entre 1/30 e 5 vezes o maior salário-mínimo, podendo ser aumentado até o décuplo.","a":true,"j":"Correto, conforme a Lei de Drogas."},{"blk":"B15","q":"Na Lei de Drogas (Art. 42), os antecedentes do agente têm preponderância específica na fixação da pena.","a":false,"j":"Os critérios de preponderância específica são natureza e quantidade da substância, personalidade e conduta social; antecedentes não entram nessa lista específica."},{"blk":"B15","q":"A Lei 15.159/2025 criou nova agravante para o crime cometido nas dependências de instituição de ensino.","a":true,"j":"Correto (Art. 61, II, 'm', CP)."},{"blk":"B15","q":"O sistema trifásico de aplicação da pena (Art. 68, CP) é composto pelas circunstâncias judiciais, agravantes/atenuantes e causas de aumento/diminuição.","a":true,"j":"Correto, são as três fases da dosimetria."},{"blk":"B16","q":"Se a Fazenda Pública executa a multa penal por inércia do Ministério Público, o rito aplicável é o da Lei 6.830/1980 (execução fiscal), na Vara de Execuções Fiscais.","a":true,"j":"Correto. O rito e o juízo mudam quando a Fazenda assume subsidiariamente a execução."},{"blk":"B16","q":"A premeditação nunca pode ser valorada negativamente na culpabilidade, na dosimetria da pena.","a":false,"j":"Pode ser valorada, desde que não constitua elementar do tipo penal (Tema Repetitivo 1318 do STJ)."},{"blk":"B16","q":"A exasperação da pena pela premeditação é automática, bastando fundamentação genérica sobre a gravidade do crime.","a":false,"j":"Não é automática; exige fundamentação específica sobre a maior reprovabilidade no caso concreto."},{"blk":"B16","q":"Condenações extintas há mais de 10 anos podem ser usadas como maus antecedentes na dosimetria.","a":false,"j":"O STJ flexibilizou o sistema da perpetuidade (REsp 1.702.028): condenações extintas há mais de 10 anos não servem mais como maus antecedentes."},{"blk":"B16","q":"O prazo depurador de 5 anos do Art. 64, I, do CP (que afasta a reincidência) aplica-se integralmente também aos maus antecedentes.","a":false,"j":"Esse prazo é específico para a reincidência; os maus antecedentes seguem lógica e prazo próprios."},{"blk":"B16","q":"Praticar roubo no período noturno justifica, por si só, o aumento da pena-base pela menor circulação de pessoas.","a":false,"j":"O STJ (Info 847) decidiu que isso não revela, por si só, maior gravidade do modus operandi, não servindo como fundamento automático de aumento."},{"blk":"B16","q":"Na receptação, o réu que não é comerciante pode responder por receptação qualificada se atuar em conjunto com o dono da loja.","a":true,"j":"Correto (STJ, Info 863). Os elementos típicos se comunicam por força do Art. 30 do CP (concurso de pessoas)."},{"blk":"B16","q":"Embriaguez ao volante e lesão corporal culposa praticadas no mesmo evento configuram crime único.","a":false,"j":"Configuram concurso material, por terem momentos consumativos distintos (REsp 2.198.744 do STJ)."},{"blk":"B16","q":"O decreto de indulto presidencial pode ser declarado inconstitucional por desvio de finalidade (interesse pessoal).","a":true,"j":"Correto (STF, ADPF 964)."},{"blk":"B16","q":"O prazo prescricional não cai pela metade se o réu atinge 70 anos entre a sentença e o julgamento dos embargos de declaração.","a":false,"j":"Cai pela metade, pois os embargos integram a sentença para esse efeito (Informativo 773 do STJ)."},{"blk":"B16","q":"A folha de antecedentes criminais (FAC) não é documento idôneo para comprovar maus antecedentes e reincidência.","a":false,"j":"É documento idôneo, conforme a Súmula 636 do STJ."},{"blk":"B16","q":"A reincidência específica que veda a substituição por pena restritiva de direitos exige identidade de crimes (mesma modalidade).","a":true,"j":"Correto (Info 706 do STJ). Se forem modalidades diferentes (ex.: furto simples e furto qualificado), cabe a substituição."},{"blk":"B16","q":"É facultativa a redução da pena quando o Tribunal retira, em recurso da defesa, uma circunstância judicial negativa considerada na pena-base.","a":false,"j":"É obrigatória a redução proporcional da pena (Tema 1214 do STJ), não sendo faculdade do julgador."},{"blk":"B16","q":"A atenuante da confissão espontânea deve preponderar sobre a agravante da dissimulação, conforme o Art. 67 do CP.","a":true,"j":"Correto."},{"blk":"B16","q":"A confissão qualificada (quando o réu confessa o fato mas alega excludente de ilicitude) não permite a atenuação da pena do Art. 65, III, 'd', do CP.","a":false,"j":"Permite, conforme a Súmula 545 do STJ."},{"blk":"B16","q":"A repercussão internacional do delito não é idônea para majorar a pena-base pelas consequências do crime.","a":false,"j":"É idônea, pois extrapola o próprio tipo penal (REsp 2.082.894)."},{"blk":"B16","q":"Mentir no interrogatório, imputando o crime a um terceiro, autoriza o aumento da pena-base.","a":false,"j":"Não autoriza, pois é exercício do direito de autodefesa do acusado (Info 789 do STJ)."},{"blk":"B16","q":"O indulto extingue tanto os efeitos primários quanto os secundários da condenação.","a":false,"j":"Extingue apenas os efeitos primários (a pena em si); os efeitos secundários, como a reincidência, permanecem (Súmula 631 do STJ)."},{"blk":"B16","q":"O período de recolhimento domiciliar noturno deve ser detraído (descontado) da pena a cumprir.","a":true,"j":"Correto (Tema 1155 do STJ)."},{"blk":"B17","q":"Os requisitos do concurso de pessoas incluem pluralidade de agentes, relevância causal de cada conduta, liame subjetivo e identidade de infração penal.","a":true,"j":"Correto, são os requisitos centrais do concurso de pessoas."},{"blk":"B17","q":"No caso de Caio, Tício e Mévio (torcida organizada), configura-se autoria colateral, pois não houve ciência entre os agentes sobre a conduta uns dos outros.","a":false,"j":"Não se aplica autoria colateral, pois Mévio fez gestos combinando a ação com Caio e Tício — havia ciência e liame subjetivo entre os três."},{"blk":"B17","q":"No caso da torcida organizada, configura-se Organização Criminosa, pois há 3 agentes envolvidos.","a":false,"j":"Não configura, pois a Lei 12.850/13 exige associação de no mínimo 4 pessoas, estruturalmente ordenada, o que não ocorre no caso com apenas 3 agentes."},{"blk":"B17","q":"No caso da torcida organizada, não há Associação Criminosa (Art. 288, CP) por faltar estabilidade e permanência.","a":true,"j":"Correto (HC 374.515/MS, STJ). O agrupamento episódico para um único ato não configura associação criminosa."},{"blk":"B17","q":"A Organização Criminosa exige mínimo de 4 pessoas, enquanto a Associação Criminosa exige mínimo de 3 pessoas.","a":true,"j":"Correto, essa é a diferença numérica entre os dois institutos."},{"blk":"B17","q":"A Associação Criminosa exige estrutura ordenada com divisão formal de tarefas, tal como a Organização Criminosa.","a":false,"j":"Não exige essa estrutura; basta associação estável e permanente de 3 ou mais pessoas para cometer crimes."},{"blk":"B17","q":"O gabarito do caso da torcida organizada é lesão corporal em concurso de pessoas.","a":true,"j":"Correto, pois estão presentes todos os requisitos do concurso de pessoas: pluralidade, relevância causal, liame subjetivo e identidade de infração."}];
+const QUESTIONS = RAW_QUESTIONS.map((q,i)=>({ id:i+1, ...q }));
+
+/* ============ STORAGE (works both as claude.ai artifact and as standalone downloaded file) ============ */
+async function storageSet(key, value){
+  try{
+    if (window.storage && typeof window.storage.set === 'function'){
+      await window.storage.set(key, JSON.stringify(value), false);
+      return;
+    }
+  }catch(e){ console.error('storage.set failed, falling back to localStorage', e); }
+  try{ localStorage.setItem('pq_'+key, JSON.stringify(value)); }catch(e){ console.error(e); }
+}
+async function storageGet(key){
+  try{
+    if (window.storage && typeof window.storage.get === 'function'){
+      const r = await window.storage.get(key, false);
+      return r ? JSON.parse(r.value) : null;
+    }
+  }catch(e){ /* key not found or storage unavailable */ }
+  try{
+    const v = localStorage.getItem('pq_'+key);
+    return v ? JSON.parse(v) : null;
+  }catch(e){ return null; }
+}
+
+/* ============ STATE ============ */
+let STATE = {
+  progress: {},      // { [questionId]: {chosen:'V'|'F', correct:bool, guess:'sabia'|'chute'|null} }
+  screen: 'home',     // home | quiz | review
+  filter: 'ALL',
+  order: [],          // array of question ids in current filtered session
+  index: 0,
+  currentChoice: null, // selection before confirm
+  confirmed: false
+};
+
+function filteredQuestions(filter){
+  if (filter === 'ALL') return QUESTIONS;
+  return QUESTIONS.filter(q => q.blk === filter);
+}
+
+function computeStats(filter){
+  const qs = filteredQuestions(filter);
+  let answered=0, correct=0;
+  qs.forEach(q=>{
+    const p = STATE.progress[q.id];
+    if (p){ answered++; if (p.correct) correct++; }
+  });
+  return { total: qs.length, answered, correct, pct: answered ? Math.round(correct/answered*100) : 0 };
+}
+
+function globalStats(){ return computeStats('ALL'); }
+
+/* ============ PERSIST / LOAD ============ */
+async function saveState(){
+  await storageSet('progress', {
+    progress: STATE.progress,
+    filter: STATE.filter,
+    screen: STATE.screen === 'quiz' ? 'quiz' : 'home',
+    order: STATE.order,
+    index: STATE.index
+  });
+}
+async function loadState(){
+  const s = await storageGet('progress');
+  if (s){
+    STATE.progress = s.progress || {};
+    STATE.filter = s.filter || 'ALL';
+    STATE.order = s.order || [];
+    STATE.index = s.index || 0;
+    if (s.screen === 'quiz' && STATE.order.length){
+      STATE.screen = 'quiz';
+    }
+  }
+}
+
+/* ============ TOAST ============ */
+let toastTimer=null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ============ NAVIGATION HELPERS ============ */
+function startQuiz(filter){
+  STATE.filter = filter;
+  STATE.order = filteredQuestions(filter).map(q=>q.id);
+  STATE.index = 0;
+  STATE.screen = 'quiz';
+  resetSelection();
+  saveState();
+  render();
+}
+function resetSelection(){
+  const q = currentQuestion();
+  const existing = q ? STATE.progress[q.id] : null;
+  STATE.currentChoice = existing ? existing.chosen : null;
+  STATE.confirmed = !!existing;
+}
+function currentQuestion(){
+  const id = STATE.order[STATE.index];
+  return QUESTIONS.find(q=>q.id===id);
+}
+function goHome(){
+  STATE.screen='home';
+  saveState();
+  render();
+}
+function goPrev(){
+  if (STATE.index>0){ STATE.index--; resetSelection(); saveState(); render(); }
+}
+function goNext(){
+  if (STATE.index < STATE.order.length-1){ STATE.index++; resetSelection(); saveState(); render(); }
+}
+function selectChoice(v){
+  if (STATE.confirmed) return;
+  STATE.currentChoice = v;
+  render();
+}
+function confirmAnswer(){
+  const q = currentQuestion();
+  if (!q || !STATE.currentChoice) return;
+  const correct = (STATE.currentChoice === 'V') === (q.a === true);
+  STATE.progress[q.id] = { chosen: STATE.currentChoice, correct, guess: null };
+  STATE.confirmed = true;
+  saveState();
+  render();
+}
+function markGuess(kind){
+  const q = currentQuestion();
+  if (!q) return;
+  const p = STATE.progress[q.id];
+  if (!p || !p.correct) return;
+  p.guess = kind;
+  saveState();
+  render();
+}
+function resetAll(){
+  if (!confirm('Isso vai apagar todo o seu progresso salvo. Confirma?')) return;
+  STATE.progress = {};
+  STATE.screen='home';
+  STATE.order=[];
+  STATE.index=0;
+  saveState();
+  render();
+  showToast('Progresso reiniciado.');
+}
+
+/* ============ DOWNLOAD STANDALONE HTML ============ */
+function downloadHtml(){
+  const html = '<!DOCTYPE html>\\n' + document.documentElement.outerHTML;
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'quiz-direito-penal.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Arquivo baixado! Abra-o direto no navegador — o progresso salva localmente nesse arquivo.');
+}
+
+/* ============ RENDER: HOME ============ */
+function renderHome(){
+  const gs = globalStats();
+  let html = `
+    <div class="card">
+      <h1 class="title">Escolha um tema para praticar</h1>
+      <p class="sub">251 questões Verdadeiro/Falso, extraídas 100% do seu material. Progresso salvo automaticamente.</p>
+      <div class="toolbar">
+        <button class="tool-btn" onclick="goReview()">📋 Ver revisão (erros e chutes)</button>
+        <button class="tool-btn" onclick="downloadHtml()">⬇️ Baixar HTML</button>
+        <button class="tool-btn" onclick="resetAll()">♻️ Reiniciar progresso</button>
+      </div>
+      <div class="blocklist">
+        <button class="block-btn all" onclick="startQuiz('ALL')">
+          <span class="bnum">★</span>
+          <span class="bname">Todos os temas (${QUESTIONS.length} questões)</span>
+          <span class="bmeta">${gs.answered}/${gs.total} · ${gs.pct}%</span>
+        </button>
+  `;
+  BLOCKS.forEach(b=>{
+    const s = computeStats(b.id);
+    const pct = s.total ? Math.round(s.answered/s.total*100) : 0;
+    html += `
+        <button class="block-btn" onclick="startQuiz('${b.id}')">
+          <span class="bnum">${b.id.replace('B','')}</span>
+          <span class="bname">${b.name}
+            <div class="progress-mini"><div style="width:${pct}%"></div></div>
+          </span>
+          <span class="bmeta">${s.answered}/${s.total}${s.answered? ' · '+s.pct+'%':''}</span>
+        </button>
+    `;
+  });
+  html += `</div></div>
+    <footer class="foot">Quiz gerado a partir do seu material de estudo — Direito Penal.<br>Toque em um tema para começar ou continuar de onde parou.</footer>
+  `;
+  document.getElementById('app').innerHTML = html;
+}
+
+/* ============ RENDER: QUIZ ============ */
+function renderQuiz(){
+  const q = currentQuestion();
+  if (!q){ goHome(); return; }
+  const blockName = BLOCKS.find(b=>b.id===q.blk).name;
+  const total = STATE.order.length;
+  const s = computeStats(STATE.filter);
+  const existing = STATE.progress[q.id];
+  const confirmed = !!existing;
+  const choice = STATE.currentChoice;
+
+  let choicesHtml = `
+    <div class="choices">
+      <button class="choice-btn V ${choice==='V'?'selected V':''} ${confirmed && q.a===true ? 'correct-reveal':''} ${confirmed && choice==='V' && q.a!==true ? 'wrong-reveal':''}"
+        ${confirmed?'disabled':''} onclick="selectChoice('V')">VERDADEIRO</button>
+      <button class="choice-btn F ${choice==='F'?'selected F':''} ${confirmed && q.a===false ? 'correct-reveal':''} ${confirmed && choice==='F' && q.a!==false ? 'wrong-reveal':''}"
+        ${confirmed?'disabled':''} onclick="selectChoice('F')">FALSO</button>
+    </div>
+  `;
+
+  let actionHtml = '';
+  if (!confirmed){
+    actionHtml = `<button class="confirm-btn" ${!choice?'disabled':''} onclick="confirmAnswer()">Confirmar resposta</button>`;
+  } else {
+    const isCorrect = existing.correct;
+    actionHtml = `
+      <div class="result-box ${isCorrect?'ok':'bad'}">
+        <div class="verdict">${isCorrect? '✅ Você acertou!' : '❌ Você errou.'}</div>
+        <div class="justif"><b>Gabarito: a afirmação é ${q.a? 'VERDADEIRA':'FALSA'}.</b><br>${q.j}</div>
+      </div>
+    `;
+    if (isCorrect){
+      actionHtml += `
+        <div class="guess-row">
+          <button class="guess-btn ${existing.guess==='sabia'?'chosen':''}" onclick="markGuess('sabia')">🧠 Eu sabia</button>
+          <button class="guess-btn ${existing.guess==='chute'?'chosen':''}" onclick="markGuess('chute')">🎲 Acertei no chute</button>
+        </div>
+      `;
+    }
+  }
+
+  const html = `
+    <div class="card">
+      <div class="quiz-header">
+        <button class="back" onclick="goHome()">← Temas</button>
+        <span class="counter">${STATE.index+1} / ${total}</span>
+      </div>
+      <div class="stat-bar">
+        <span>Respondidas: <b>${s.answered}/${s.total}</b></span>
+        <span>Acertos: <b>${s.correct}</b></span>
+        <span>Aproveitamento: <b>${s.pct}%</b></span>
+      </div>
+      <span class="qtag">${blockName}</span>
+      <div class="qtext">${q.q}</div>
+      ${choicesHtml}
+      ${actionHtml}
+      <div class="nav-row">
+        <button class="nav-btn" onclick="goPrev()" ${STATE.index===0?'disabled':''}>← Anterior</button>
+        <button class="nav-btn primary" onclick="goNext()" ${STATE.index===total-1?'disabled':''}>Próxima →</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('app').innerHTML = html;
+}
+
+/* ============ RENDER: REVIEW ============ */
+function goReview(){ STATE.screen='review'; render(); }
+function renderReview(){
+  const wrong = [];
+  const guessed = [];
+  QUESTIONS.forEach(q=>{
+    const p = STATE.progress[q.id];
+    if (!p) return;
+    if (!p.correct) wrong.push(q);
+    else if (p.guess === 'chute') guessed.push(q);
+  });
+
+  function item(q, tag){
+    return `
+      <div class="review-item">
+        <span class="rtag ${tag==='erro'?'err':'chute'}">${tag==='erro'?'Errei':'Chute'}</span>
+        <span style="font-size:11px;color:var(--muted)">${BLOCKS.find(b=>b.id===q.blk).name}</span>
+        <div class="rq">${q.q}</div>
+        <div class="rj"><b>Gabarito: ${q.a?'Verdadeiro':'Falso'}.</b> ${q.j}</div>
+      </div>
+    `;
+  }
+
+  let html = `
+    <div class="card">
+      <div class="quiz-header">
+        <button class="back" onclick="goHome()">← Temas</button>
+      </div>
+      <h1 class="title">Revisão</h1>
+      <p class="sub">Questões que você errou e questões que acertou no chute — ótimas candidatas pra revisar antes da prova.</p>
+    </div>
+  `;
+
+  html += `<div class="card"><h2 style="font-family:var(--serif);font-size:16px;margin:0 0 10px;color:var(--wine-dark);">❌ Erros (${wrong.length})</h2>`;
+  html += wrong.length ? wrong.map(q=>item(q,'erro')).join('') : `<div class="empty">Nenhum erro registrado ainda.</div>`;
+  html += `</div>`;
+
+  html += `<div class="card"><h2 style="font-family:var(--serif);font-size:16px;margin:0 0 10px;color:var(--brass-dark);">🎲 Acertos no chute (${guessed.length})</h2>`;
+  html += guessed.length ? guessed.map(q=>item(q,'chute')).join('') : `<div class="empty">Nenhum acerto no chute marcado ainda.</div>`;
+  html += `</div>`;
+
+  document.getElementById('app').innerHTML = html;
+}
+
+/* ============ MAIN RENDER ============ */
+function render(){
+  if (STATE.screen === 'quiz') renderQuiz();
+  else if (STATE.screen === 'review') renderReview();
+  else renderHome();
+}
+
+/* ============ INIT ============ */
+(async function init(){
+  await loadState();
+  render();
+})();
+</script>
+</body>
+</html>

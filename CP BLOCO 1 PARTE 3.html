@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz V/F — Direito Penal — Parte 3 (Blocos 16 a 22)</title>
+<style>
+  :root{
+    --navy:#1b2a4a;
+    --navy-dark:#121d35;
+    --cream:#f7f3ea;
+    --card:#ffffff;
+    --gold:#b8901f;
+    --brick:#9c3b32;
+    --ink:#22242a;
+    --muted:#6b6f7a;
+    --green:#2f7d4f;
+    --green-bg:#e7f3ec;
+    --red:#b3392c;
+    --red-bg:#fbeae7;
+    --line:#e3ddcf;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0;}
+  #app{max-width:880px;margin:0 auto;padding:18px 16px 60px;}
+
+  .topbar{
+    background:var(--navy);
+    color:#f2efe4;
+    padding:18px 20px;
+    border-radius:14px;
+    margin-bottom:14px;
+  }
+  .topbar h1{font-size:1.35rem;letter-spacing:.2px;}
+  .topbar p{margin:4px 0 0;font-size:.85rem;color:#cfd4e0;}
+
+  .stats{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:14px;
+  }
+  .stat{
+    flex:1 1 90px;
+    text-align:center;
+    padding:6px 4px;
+    border-right:1px solid var(--line);
+  }
+  .stat:last-child{border-right:none;}
+  .stat .num{font-size:1.25rem;font-weight:700;font-family:Georgia,serif;}
+  .stat .lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+  .stat.correct .num{color:var(--green);}
+  .stat.wrong .num{color:var(--red);}
+  .stat.guess .num{color:var(--gold);}
+
+  .toolsrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .toolsrow button{
+    flex:1 1 auto;
+    padding:9px 12px;
+    border-radius:9px;
+    border:1px solid var(--navy);
+    background:var(--card);
+    color:var(--navy);
+    font-size:.82rem;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .toolsrow button:hover{background:var(--navy);color:#fff;}
+  .toolsrow button.danger{border-color:var(--red);color:var(--red);}
+  .toolsrow button.danger:hover{background:var(--red);color:#fff;}
+
+  .tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .tab-btn{
+    flex:1;
+    padding:10px;
+    border-radius:9px 9px 0 0;
+    border:1px solid var(--line);
+    background:#efe9da;
+    color:var(--muted);
+    cursor:pointer;
+    font-weight:700;
+    font-size:.88rem;
+  }
+  .tab-btn.active{background:var(--card);color:var(--navy);border-bottom:1px solid var(--card);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .progresswrap{margin-bottom:10px;}
+  .progressbar{
+    height:8px;background:#e6e0d0;border-radius:6px;overflow:hidden;
+  }
+  .progressfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--navy));width:0%;transition:width .25s;}
+  .progresstext{font-size:.75rem;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between;}
+
+  .qjump{display:flex;gap:8px;align-items:center;margin-bottom:14px;font-size:.82rem;}
+  .qjump select{
+    flex:1;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:.82rem;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:14px;
+  }
+  .badge{
+    display:inline-block;
+    background:var(--navy);
+    color:#fff;
+    font-size:.7rem;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:20px;
+    letter-spacing:.3px;
+    margin-bottom:10px;
+  }
+  .qnum{font-size:.78rem;color:var(--muted);margin-bottom:6px;}
+  .qtext{font-size:1.05rem;font-weight:500;margin-bottom:18px;}
+
+  .vf-buttons{display:flex;gap:12px;margin-bottom:6px;}
+  .btn-v,.btn-f{
+    flex:1;
+    padding:14px;
+    border-radius:10px;
+    font-size:1rem;
+    font-weight:700;
+    cursor:pointer;
+    border:2px solid transparent;
+  }
+  .btn-v{background:var(--green-bg);color:var(--green);border-color:var(--green);}
+  .btn-v:hover{background:var(--green);color:#fff;}
+  .btn-f{background:var(--red-bg);color:var(--red);border-color:var(--red);}
+  .btn-f:hover{background:var(--red);color:#fff;}
+  .vf-buttons button:disabled{opacity:.45;cursor:default;}
+  .vf-buttons button:disabled:hover{background:inherit;color:inherit;}
+
+  .feedback{margin-top:16px;}
+  .result-banner{
+    padding:10px 14px;border-radius:9px;font-weight:700;margin-bottom:8px;font-size:.95rem;
+  }
+  .result-banner.correct{background:var(--green-bg);color:var(--green);}
+  .result-banner.wrong{background:var(--red-bg);color:var(--red);}
+
+  .gabarito-banner{
+    padding:8px 14px;border-radius:9px;margin-bottom:10px;font-size:.85rem;font-weight:700;
+    border:1px dashed var(--line);
+  }
+  .gabarito-banner.is-true{color:var(--green);}
+  .gabarito-banner.is-false{color:var(--red);}
+
+  .justification{
+    background:#f4f0e3;
+    border-left:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:.88rem;
+    color:#3c3b35;
+  }
+  .justification b{color:var(--navy);}
+
+  .guess-row{margin-top:14px;}
+  .guess-row p{font-size:.82rem;color:var(--muted);margin:0 0 8px;}
+  .guess-btns{display:flex;gap:10px;}
+  .guess-btns button{
+    flex:1;padding:9px;border-radius:8px;border:1px solid var(--gold);background:#fff;color:var(--gold);font-weight:700;font-size:.82rem;cursor:pointer;
+  }
+  .guess-btns button:hover{background:var(--gold);color:#fff;}
+  .guess-tag{
+    display:inline-block;margin-top:10px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:700;
+  }
+  .guess-tag.sabia{background:#e7f3ec;color:var(--green);}
+  .guess-tag.chute{background:#fbf2dc;color:var(--gold);}
+
+  .redo-link{display:inline-block;margin-top:12px;font-size:.78rem;color:var(--muted);cursor:pointer;text-decoration:underline;}
+
+  .navbtns{display:flex;justify-content:space-between;gap:10px;margin-top:6px;}
+  .navbtns button{
+    flex:1;padding:11px;border-radius:9px;border:1px solid var(--navy);background:var(--navy);color:#fff;font-weight:700;cursor:pointer;
+  }
+  .navbtns button:disabled{opacity:.35;cursor:default;}
+  .navbtns button.secondary{background:#fff;color:var(--navy);}
+
+  .review-section h3{color:var(--navy);font-size:1rem;margin-bottom:10px;border-bottom:2px solid var(--line);padding-bottom:6px;}
+  .review-item{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;
+  }
+  .review-item .qtext{font-size:.92rem;margin-bottom:8px;font-weight:500;}
+  .empty-state{color:var(--muted);font-size:.85rem;padding:14px;text-align:center;background:var(--card);border:1px dashed var(--line);border-radius:10px;}
+
+  .savehint{font-size:.72rem;color:var(--muted);text-align:center;margin-top:10px;}
+  .footer-note{font-size:.72rem;color:var(--muted);text-align:center;margin-top:18px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <h1>⚖️ Quiz V/F — Direito Penal</h1>
+    <p>Parte 3 · Blocos 16 a 22 (Imunidades, Imputação Objetiva, Causalidade, Jurisprudência STJ/STF, Classificação de Crimes)</p>
+  </div>
+
+  <div class="stats" id="statsBar"></div>
+
+  <div class="toolsrow">
+    <button id="btnReset">🔄 Reiniciar progresso</button>
+    <button id="btnDownload">⬇️ Baixar HTML (usar offline)</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="quiz">📝 Quiz</button>
+    <button class="tab-btn" data-tab="review">🔎 Revisão (erros e chutes)</button>
+  </div>
+
+  <div class="panel active" id="panelQuiz">
+    <div class="progresswrap">
+      <div class="progressbar"><div class="progressfill" id="progressFill"></div></div>
+      <div class="progresstext"><span id="progressText">0/110 respondidas</span><span id="progressPct">0%</span></div>
+    </div>
+
+    <div class="qjump">
+      <label for="qSelect">Ir para:</label>
+      <select id="qSelect"></select>
+    </div>
+
+    <div class="card" id="questionCard"></div>
+
+    <div class="navbtns">
+      <button class="secondary" id="btnPrev">← Anterior</button>
+      <button id="btnNext">Próxima →</button>
+    </div>
+    <p class="savehint" id="saveHint"></p>
+  </div>
+
+  <div class="panel" id="panelReview">
+    <div class="review-section">
+      <h3>❌ Questões que você errou</h3>
+      <div id="reviewWrong"></div>
+    </div>
+    <div class="review-section">
+      <h3>🎲 Questões que você acertou no chute</h3>
+      <div id="reviewGuess"></div>
+    </div>
+  </div>
+
+  <p class="footer-note">
+    O progresso é salvo automaticamente neste quiz. Se você usar o botão "Baixar HTML", o arquivo salvo no seu
+    computador terá um progresso próprio e separado (guardado no navegador que você usar para abri-lo).
+  </p>
+</div>
+
+<script>
+/* =========================================================
+   BANCO DE QUESTÕES — extraídas exclusivamente do material
+   enviado (Parte 3 — Blocos 16 a 22)
+   ========================================================= */
+const QUESTIONS = [
+// ---------------- BLOCO 16 — IMUNIDADE DIPLOMÁTICA ----------------
+{id:1,block:"BLOCO 16 — Imunidade Diplomática",text:"A imunidade diplomática tem natureza jurídica de causa pessoal de exclusão de pena (prerrogativa do cargo), e o fato continua sendo típico e ilícito.",answer:true,
+justification:"Correto. A imunidade diplomática é causa pessoal de exclusão de pena — o fato permanece típico e ilícito, apenas o agente fica isento de pena em razão do cargo."},
+{id:2,block:"BLOCO 16 — Imunidade Diplomática",text:"O diplomata pode renunciar voluntariamente à sua própria imunidade, independentemente de manifestação do Estado de origem.",answer:false,
+justification:"Errado. O diplomata não pode renunciar voluntariamente. Apenas o Estado de origem (Estado acreditante) detém o poder de renúncia."},
+{id:3,block:"BLOCO 16 — Imunidade Diplomática",text:"A imunidade diplomática impede tanto a investigação policial quanto o processo penal contra o diplomata.",answer:false,
+justification:"Errado. A imunidade impede o processo penal e a punição, mas não impede a investigação do fato."},
+{id:4,block:"BLOCO 16 — Imunidade Diplomática",text:"O diplomata fica isento de responder por crimes cometidos no Estado acreditado mesmo em seu país de origem.",answer:false,
+justification:"Errado. A imunidade tem natureza processual e impede apenas o julgamento pelo Estado acreditado; o diplomata continua respondendo perante seu Estado de origem."},
+{id:5,block:"BLOCO 16 — Imunidade Diplomática",text:"Possuem imunidade diplomática o Chefe de Estado, o Embaixador (com família e pessoal de apoio), funcionários de organismos internacionais quando em serviço e agentes consulares quando em serviço.",answer:true,
+justification:"Correto. Essas são as quatro categorias principais que possuem imunidade diplomática segundo o material."},
+{id:6,block:"BLOCO 16 — Imunidade Diplomática",text:"A ficção jurídica da extraterritorialidade liga-se à subjetividade das pessoas que estão a bordo, e não à embarcação ou aeronave.",answer:false,
+justification:"Errado. É o inverso: a extraterritorialidade liga-se à embarcação ou aeronave (consideradas território por extensão), não à subjetividade das pessoas nela presentes."},
+
+// ---------------- BLOCO 17 — IMUNIDADE PARLAMENTAR ----------------
+{id:7,block:"BLOCO 17 — Imunidade Parlamentar",text:"Segundo o STF e LFG, a imunidade parlamentar material tem natureza jurídica de causa de exclusão de ilicitude.",answer:false,
+justification:"Errado. Segundo o STF e LFG, a natureza jurídica é de causa de atipicidade da conduta, não de exclusão de ilicitude."},
+{id:8,block:"BLOCO 17 — Imunidade Parlamentar",text:"A imunidade material abrange a inviolabilidade civil, penal e administrativa do parlamentar por suas opiniões, palavras e votos.",answer:true,
+justification:"Correto. É exatamente essa a extensão da imunidade material segundo o STF."},
+{id:9,block:"BLOCO 17 — Imunidade Parlamentar",text:"Para opiniões proferidas dentro do Congresso há presunção absoluta de nexo funcional; fora dele (inclusive na internet) é necessário demonstrar a pertinência temática com o mandato.",answer:true,
+justification:"Correto. Dentro do Congresso a presunção é absoluta; fora dele deve-se demonstrar a relação com o mandato (pertinência temática)."},
+{id:10,block:"BLOCO 17 — Imunidade Parlamentar",text:"Após a diplomação, o Deputado Federal só pode ser preso em flagrante de crime inafiançável ou após sentença condenatória com trânsito em julgado.",answer:true,
+justification:"Correto. São essas as duas únicas hipóteses de prisão do parlamentar federal após a diplomação."},
+{id:11,block:"BLOCO 17 — Imunidade Parlamentar",text:"A sustação da ação penal é a prerrogativa da Casa Legislativa de sustar o andamento do inquérito policial por crime cometido após a diplomação.",answer:false,
+justification:"Errado. A sustação atinge a ação penal, e não o inquérito policial — este não é abrangido pela sustação."},
+{id:12,block:"BLOCO 17 — Imunidade Parlamentar",text:"A sustação da ação penal exige voto da maioria absoluta, juízo político e prazo de 45 dias para apreciação, ficando a prescrição suspensa durante esse período.",answer:true,
+justification:"Correto. Esses são os requisitos da sustação, com suspensão da prescrição durante o trâmite."},
+{id:13,block:"BLOCO 17 — Imunidade Parlamentar",text:"A Súmula 394 do STF, ainda vigente, determina que o foro por prerrogativa de função permanece mesmo após a cessação do exercício funcional.",answer:false,
+justification:"Errado. A Súmula 394 foi cancelada em 2002 e não está mais vigente."},
+{id:14,block:"BLOCO 17 — Imunidade Parlamentar",text:"Pela regra da Atualidade Limitada (AP 937 QO), o foro aplica-se apenas a crimes cometidos durante o cargo e relacionados às funções, dispensando-se a pertinência temática para juízes, promotores e membros do TCE.",answer:true,
+justification:"Correto. A regra geral exige pertinência temática, mas há exceção expressa para magistrados, membros do MP e do TCE."},
+{id:15,block:"BLOCO 17 — Imunidade Parlamentar",text:"No HC 232.627 (2025), o STF manteve o entendimento de que a prerrogativa de foro cessa imediatamente com o fim do mandato, mesmo para crimes praticados no cargo e em razão dele.",answer:false,
+justification:"Errado. Houve overruling: o STF passou a entender que a prerrogativa de foro subsiste mesmo após o afastamento do cargo para crimes praticados no cargo e em razão dele, encerrando a mudança de foro no fim do processo."},
+{id:16,block:"BLOCO 17 — Imunidade Parlamentar",text:"Em caso de mandatos cruzados, o foro no STF é prorrogado se não houver solução de continuidade entre os mandatos, mesmo com mudança de Casa Legislativa; havendo interrupção, o foro cessa.",answer:true,
+justification:"Correto. A prorrogação depende da ausência de interrupção entre os mandatos."},
+{id:17,block:"BLOCO 17 — Imunidade Parlamentar",text:"Medidas cautelares diversas da prisão podem ser aplicadas a parlamentares e, quando impedirem o livre exercício do mandato, exigem deliberação da Casa Legislativa — regra que também se aplica aos vereadores.",answer:false,
+justification:"Errado. A exigência de deliberação da Casa Legislativa para medidas que impeçam o mandato não se aplica aos vereadores."},
+{id:18,block:"BLOCO 17 — Imunidade Parlamentar",text:"Para Gilmar Mendes, a prisão civil do congressista devedor de alimentos é incabível, pois a imunidade abarca qualquer privação de liberdade.",answer:true,
+justification:"Correto. Essa é a posição de Gilmar Mendes mencionada no material (Uadi Bulos diverge, entendendo cabível; Rogério Sanches diferencia alimentos provisórios e definitivos)."},
+{id:19,block:"BLOCO 17 — Imunidade Parlamentar",text:"O parlamentar pode se recusar a testemunhar sobre qualquer assunto, sem exceções.",answer:false,
+justification:"Errado. Os parlamentares são obrigados a testemunhar, salvo sobre informações obtidas em razão do mandato ou confiadas em segredo; possuem apenas a prerrogativa de ajustar dia, hora e local."},
+{id:20,block:"BLOCO 17 — Imunidade Parlamentar",text:"Em licença, o parlamentar perde a imunidade; no Estado de Sítio, as imunidades continuam, salvo suspensão por 2/3 da Casa para atos incompatíveis com a medida praticados fora do Congresso.",answer:true,
+justification:"Correto. É exatamente essa a regra para licença e Estado de Sítio."},
+{id:21,block:"BLOCO 17 — Imunidade Parlamentar",text:"O Deputado Estadual possui a mesma imunidade dos Deputados Federais por simetria, enquanto o Vereador possui apenas imunidade material, limitada ao exercício do mandato e à circunscrição do município.",answer:true,
+justification:"Correto. É a distinção apresentada no material entre Deputado Estadual e Vereador."},
+{id:22,block:"BLOCO 17 — Imunidade Parlamentar",text:"Segundo o STF (caso Daniel Silveira), o discurso de ódio é protegido pela imunidade parlamentar material, por configurar exercício regular do mandato.",answer:false,
+justification:"Errado. O STF entende que o discurso de ódio configura abuso de direito, não protegido pela imunidade parlamentar material."},
+{id:23,block:"BLOCO 17 — Imunidade Parlamentar",text:"O Deputado Federal pode ser preso em flagrante de crime afiançável.",answer:false,
+justification:"Errado. Só é possível a prisão em flagrante de crime inafiançável (Art. 53, §2º, CF)."},
+
+// ---------------- BLOCO 18 — TEORIA DA IMPUTAÇÃO OBJETIVA ----------------
+{id:24,block:"BLOCO 18 — Imputação Objetiva",text:"O objetivo central da Teoria da Imputação Objetiva é limitar o regresso ao infinito da causalidade física, utilizando critérios normativos para atribuir o resultado ao agente.",answer:true,
+justification:"Correto. Esse é o objetivo central da teoria, usando filtros jurídicos (normativos) em vez de apenas causais."},
+{id:25,block:"BLOCO 18 — Imputação Objetiva",text:"Os três filtros de Claus Roxin são: criação/incremento de risco proibido; realização desse risco no resultado; e alcance do tipo.",answer:true,
+justification:"Correto. São os três filtros propostos por Roxin para a imputação objetiva."},
+{id:26,block:"BLOCO 18 — Imputação Objetiva",text:"Pelo Princípio da Confiança, não se pode esperar que as outras pessoas ajam conforme as regras, devendo o agente sempre prever o descumprimento alheio.",answer:false,
+justification:"Errado. É o inverso: pode-se esperar que as outras pessoas ajam conforme as regras, salvo evidências concretas em contrário."},
+{id:27,block:"BLOCO 18 — Imputação Objetiva",text:"No erro médico comum (risco combinado), o atirador responde pelo resultado morte; no erro médico grosseiro (crasso), o nexo é rompido e o atirador responde apenas por tentativa.",answer:true,
+justification:"Correto. É exatamente essa a distinção feita pela Teoria da Imputação Objetiva entre erro médico comum e erro médico grosseiro."},
+{id:28,block:"BLOCO 18 — Imputação Objetiva",text:"A Teoria da Imputação Objetiva substitui a análise de dolo e culpa, tornando-a desnecessária.",answer:false,
+justification:"Errado. A teoria analisa a tipicidade objetiva; dolo e culpa continuam sendo analisados na tipicidade subjetiva, após a confirmação da imputação objetiva."},
+{id:29,block:"BLOCO 18 — Imputação Objetiva",text:"Se o resultado é produto exclusivo de risco posterior (erro médico crasso), rompe-se o nexo normativo e o primeiro agente responde pelo resultado consumado.",answer:false,
+justification:"Errado. Rompido o nexo, o primeiro agente responde apenas pela tentativa (se houve dolo), pois o resultado não é desdobramento do risco original."},
+{id:30,block:"BLOCO 18 — Imputação Objetiva",text:"O Código Penal Militar de 1969 é formalmente causalista, mas a doutrina moderna o lê sob perspectiva neokantista ou finalista.",answer:true,
+justification:"Correto. O CPM trata dolo e culpa na culpabilidade (Art. 33), mas a leitura moderna permite analisar elementos como a exigibilidade de conduta diversa."},
+{id:31,block:"BLOCO 18 — Imputação Objetiva",text:"O risco permitido é aquele que a sociedade tolera como inerente a certas atividades; havendo risco permitido, não há imputação objetiva mesmo que ocorra resultado lesivo.",answer:true,
+justification:"Correto. Esse é o conceito de risco permitido e seu efeito sobre a imputação objetiva."},
+{id:32,block:"BLOCO 18 — Imputação Objetiva",text:"No caso da vítima de tiro que morre em acidente de ambulância no trajeto ao hospital, o autor do tiro sempre responderá pelo homicídio consumado, independentemente das circunstâncias do acidente.",answer:false,
+justification:"Errado. Depende: se o acidente for causa superveniente relativamente independente que por si só produziu o resultado, rompe-se o nexo e o autor responde apenas por tentativa."},
+{id:33,block:"BLOCO 18 — Imputação Objetiva",text:"A Teoria da Causalidade Adequada considera causa apenas o antecedente que, por si só, é apto a produzir o resultado, sendo usada pelo Código Penal como exceção no Art. 13, §1º.",answer:true,
+justification:"Correto. É a definição da Teoria da Causalidade Adequada e sua aplicação como exceção no CP."},
+
+// ---------------- BLOCO 19 — CAUSALIDADE E NEXO CAUSAL ----------------
+{id:34,block:"BLOCO 19 — Causalidade e Nexo Causal",text:"O Código Penal Brasileiro adota a Teoria da Equivalência dos Antecedentes (conditio sine qua non) para a relação de causalidade.",answer:true,
+justification:"Correto. É a teoria adotada como regra geral pelo CP brasileiro."},
+{id:35,block:"BLOCO 19 — Causalidade e Nexo Causal",text:"As causas supervenientes relativamente independentes que, por si sós, produzem o resultado não rompem o nexo causal, respondendo o agente pelo resultado consumado.",answer:false,
+justification:"Errado. Essas causas rompem o nexo causal quanto ao resultado final; o agente responde apenas pelos atos já praticados (tentativa) — Art. 13, §1º, CP."},
+{id:36,block:"BLOCO 19 — Causalidade e Nexo Causal",text:"Se a vítima de um tiro morre em um incêndio no hospital, fator determinante que por si só causou a morte, o autor do tiro responde por homicídio consumado.",answer:false,
+justification:"Errado. Sendo a causa superveniente o fator determinante que por si só causou a morte, o nexo é rompido e o agente responde por tentativa de homicídio."},
+{id:37,block:"BLOCO 19 — Causalidade e Nexo Causal",text:"Não existe nexo causal nos crimes de omissão imprópria, pois o garantidor não tem relação física com o resultado.",answer:false,
+justification:"Errado. Existe nexo de causalidade normativa ou jurídica, pois o garantidor tinha dever legal de evitar o resultado."},
+{id:38,block:"BLOCO 19 — Causalidade e Nexo Causal",text:"Pela Teoria da Conditio Sine Qua Non, para verificar se uma conduta é causa, suprime-se mentalmente a conduta — se o resultado desaparecer, ela é causa.",answer:true,
+justification:"Correto. É exatamente o procedimento da eliminação hipotética usado por essa teoria."},
+{id:39,block:"BLOCO 19 — Causalidade e Nexo Causal",text:"O problema do regresso ao infinito na Teoria da Equivalência é resolvido pelo elemento subjetivo: sem dolo ou culpa, não há crime, mesmo havendo causalidade física.",answer:true,
+justification:"Correto. É essa a solução apontada para evitar a responsabilização de pessoas remotas (ex.: fabricante da arma)."},
+{id:40,block:"BLOCO 19 — Causalidade e Nexo Causal",text:"Causa absolutamente independente é aquela que tem alguma relação com a conduta do agente, fazendo-o responder pelo resultado.",answer:false,
+justification:"Errado. É o inverso: a causa absolutamente independente não tem qualquer relação com a conduta do agente, que não responde pelo resultado. A relativamente independente é que guarda relação com a conduta."},
+
+// ---------------- BLOCO 20 — JURISPRUDÊNCIA STJ/STF ----------------
+{id:41,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pela Súmula 574 do STJ, a comprovação da materialidade no crime de pirataria exige perícia individual de cada item apreendido.",answer:false,
+justification:"Errado. É suficiente a perícia por amostragem, sendo desnecessária a identificação dos titulares dos direitos autorais violados."},
+{id:42,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Segundo o Informativo 795 do STJ, o estrangeiro que entra no Brasil com passaporte falso para buscar refúgio e depois recebe residência permanente ainda pode ser processado pelo crime de uso de documento falso.",answer:false,
+justification:"Errado. A concessão de residência permanente equivale a anistia legal, afastando a justa causa para a ação penal."},
+{id:43,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Não há incompatibilidade entre a perda do cargo (Art. 92, I, CP) e a substituição da pena por restritiva de direitos.",answer:true,
+justification:"Correto. O Informativo 798 do STJ afirma que não há incompatibilidade entre os dois institutos."},
+{id:44,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"O agente flagrado com celular durante a revista, antes de ingressar no presídio, comete o Art. 349-A do CP em sua forma consumada.",answer:false,
+justification:"Errado. O crime é material e só se consuma com o efetivo ingresso do objeto; se flagrado na revista, o crime é apenas tentado."},
+{id:45,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pelo Tema Repetitivo 1205 do STJ, a restituição imediata e integral do bem furtado já é suficiente, por si só, para reconhecer a insignificância.",answer:false,
+justification:"Errado. É necessária a análise cumulativa dos requisitos do princípio MARI, não bastando apenas a restituição."},
+{id:46,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"O ato de adulto manter relação sexual com adolescente entre 14 e 18 anos mediante presentes e luxos configura Favorecimento da Exploração Sexual de Adolescente (Art. 218-B, §2º, I, CP).",answer:true,
+justification:"Correto. É a tipificação apontada pelo Informativo 825 do STJ."},
+{id:47,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"O consentimento da vítima entre 14 e 18 anos exclui o crime de exploração sexual, mesmo havendo induzimento mediante vantagem econômica.",answer:false,
+justification:"Errado. O consentimento é irrelevante quando há induzimento mediante vantagens econômicas."},
+{id:48,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"O crime de injúria racial ou homofóbica admite prazo de 6 meses para queixa-crime, como ocorre nas injúrias comuns.",answer:false,
+justification:"Errado. O STF equiparou a injúria racial e a homofobia ao crime de racismo, tornando-os imprescritíveis e inafiançáveis."},
+{id:49,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Segundo o Informativo 814 do STJ, uma pessoa heterossexual pode sofrer homofobia, pois o que importa são os insultos preconceituosos relacionados ao grupo LGBTQIA+, independentemente da orientação sexual real da vítima.",answer:true,
+justification:"Correto. É essa a conclusão do Informativo 814 do STJ."},
+{id:50,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pela Súmula 669 do STJ, o fornecimento gratuito de bebida alcoólica a menores não é crime, pois o Art. 243 do ECA exige venda onerosa.",answer:false,
+justification:"Errado. O Art. 243 do ECA pune vender, fornecer ou entregar, ainda que gratuitamente — é crime mesmo sem onerosidade."},
+{id:51,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pela Súmula 500 do STJ, a configuração do crime do Art. 244-B do ECA (corrupção de menores) exige prova de que o menor foi efetivamente corrompido.",answer:false,
+justification:"Errado. Trata-se de crime formal, bastando a participação do menor na infração penal com um adulto, sem necessidade de prova de corrupção efetiva."},
+{id:52,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pelo Tema 561 do STJ, é possível aplicar o privilégio ao furto qualificado quando a qualificadora for de natureza objetiva, mas não quando for subjetiva.",answer:true,
+justification:"Correto. O privilégio cabe se a qualificadora for objetiva (ex.: rompimento de obstáculo, concurso de pessoas), mas não se for subjetiva (ex.: abuso de confiança)."},
+{id:53,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pelo Tema 581 do STJ, os crimes de estupro praticados antes de 2009 não eram considerados hediondos, mesmo na forma simples.",answer:false,
+justification:"Errado. O caráter hediondo já existia antes da reforma de 2009, inclusive na forma simples."},
+{id:54,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pelo Tema 585 do STJ, é possível, em regra, compensar integralmente a confissão espontânea com a reincidência; porém, se o agente for multirreincidente, a reincidência deve prevalecer.",answer:true,
+justification:"Correto. É essa a regra geral e a exceção fixadas no Tema 585 do STJ."},
+{id:55,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pela Súmula 444 do STJ, é vedada a utilização de inquéritos e ações penais em curso para agravar a pena-base.",answer:true,
+justification:"Correto. É exatamente o teor da Súmula 444 do STJ."},
+{id:56,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Atos infracionais cometidos quando menor podem gerar reincidência ou maus antecedentes quando o agente se tornar adulto.",answer:false,
+justification:"Errado. Ato infracional não é crime e não gera reincidência ou maus antecedentes."},
+{id:57,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pela Súmula Vinculante 56 do STF, na falta de vagas no regime adequado, o sentenciado pode ser colocado em regime mais rigoroso até a abertura de vaga.",answer:false,
+justification:"Errado. O sentenciado não pode ser prejudicado pela falta estrutural do Estado; buscam-se alternativas (saída antecipada ou prisão domiciliar monitorada), nunca regime mais rigoroso."},
+{id:58,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"O arrependimento posterior é cabível nos crimes contra a fé pública, pois o dano à confiança da sociedade pode ser reparado.",answer:false,
+justification:"Errado. O instituto exige crimes sem violência e objeto material reparável; na fé pública, o dano é imaterial e irreparável, não cabendo o arrependimento posterior."},
+{id:59,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pelo Tema 1.169 do STF, a coleta obrigatória de DNA de condenados por crimes hediondos é constitucional e não viola o princípio nemo tenetur se detegere.",answer:true,
+justification:"Correto. O STF decidiu pela constitucionalidade da coleta obrigatória."},
+{id:60,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"O condenado pode se recusar a fornecer DNA, mesmo quando a técnica for indolor, sem que isso configure falta grave.",answer:false,
+justification:"Errado. A submissão é obrigatória por força do Art. 9º-A da LEP; a recusa constitui falta grave."},
+{id:61,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pelo Tema 593 do STJ, o crime de pirataria (Art. 184, §2º) admite o Princípio da Adequação Social, pois é uma conduta socialmente comum.",answer:false,
+justification:"Errado. O fato de a pirataria ser comum não retira a tipicidade da conduta nem afasta a punição."},
+{id:62,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pela Súmula 231 do STJ, atenuantes da segunda fase da dosimetria podem reduzir a pena abaixo do mínimo legal, desde que devidamente fundamentadas.",answer:false,
+justification:"Errado. Nenhuma atenuante pode trazer a pena para aquém do mínimo legal na segunda fase da dosimetria."},
+{id:63,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pela Súmula 18 do STJ, o Perdão Judicial extingue a punibilidade e não deixa qualquer efeito condenatório, continuando o agente primário e sem antecedentes.",answer:true,
+justification:"Correto. É exatamente o efeito do Perdão Judicial segundo a Súmula 18 do STJ."},
+{id:64,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pela Súmula 520 do STJ, o benefício da saída temporária pode ser delegado pelo juiz ao diretor do presídio, por se tratar de ato administrativo.",answer:false,
+justification:"Errado. É ato jurisdicional; o juiz deve avaliar pessoalmente os requisitos, não podendo delegar."},
+{id:65,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pelas Súmulas 440 do STJ e 718 do STF, o juiz pode fundamentar regime mais grave apenas na gravidade abstrata do crime.",answer:false,
+justification:"Errado. É necessária motivação idônea baseada em fatos concretos do processo, não bastando a gravidade abstrata."},
+{id:66,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"O STJ admite a fundamentação conjunta da pena para vários corréus, desde que estejam em situação fática rigorosamente idêntica e a decisão seja devidamente motivada.",answer:true,
+justification:"Correto. É essa a posição admitida pelo STJ."},
+{id:67,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"A sentença que concede o Perdão Judicial tem natureza condenatória, pois reconhece a prática do crime.",answer:false,
+justification:"Errado. É sentença declaratória da extinção da punibilidade — o juiz reconhece que o autor já sofreu consequências tão graves que a pena se torna desnecessária."},
+{id:68,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"A perda de cargo público é efeito automático da condenação, dispensando motivação expressa na sentença.",answer:false,
+justification:"Errado. É efeito específico, não automático; o juiz deve motivar e declarar expressamente a perda na sentença."},
+{id:69,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Após o trânsito em julgado, a execução da pena de multa é de responsabilidade do Juiz da Execução Penal, sendo a multa considerada dívida de valor sujeita às normas da Fazenda Pública.",answer:true,
+justification:"Correto. É essa a regra sobre execução da pena de multa após o trânsito em julgado."},
+{id:70,block:"BLOCO 20 — Jurisprudência STJ/STF",text:"Pela Constituição Brasileira (Art. 5º, XLVII), são proibidas as penas de morte (salvo guerra declarada), de caráter perpétuo, de trabalhos forçados, de banimento e cruéis.",answer:true,
+justification:"Correto. São essas as cinco penas proibidas pelo Art. 5º, XLVII, da CF."},
+
+// ---------------- BLOCO 21 — CLASSIFICAÇÃO DE CRIMES E CONCEITOS GERAIS ----------------
+{id:71,block:"BLOCO 21 — Classificação de Crimes",text:"Crimes de dano exigem efetiva lesão ao bem jurídico, enquanto crimes de perigo se consumam com a simples exposição do bem jurídico a risco.",answer:true,
+justification:"Correto. É a distinção clássica entre crimes de dano e de perigo."},
+{id:72,block:"BLOCO 21 — Classificação de Crimes",text:"Crimes unissubjetivos exigem concurso de duas ou mais pessoas, enquanto os plurissubjetivos podem ser praticados por uma só pessoa.",answer:false,
+justification:"Errado. É o inverso: unissubjetivos podem ser praticados por uma só pessoa; plurissubjetivos exigem concurso de duas ou mais pessoas (ex.: associação criminosa)."},
+{id:73,block:"BLOCO 21 — Classificação de Crimes",text:"Crimes de atividade (ou mera conduta) consumam-se apenas com a ação, sem necessidade de resultado naturalístico para a tipificação.",answer:true,
+justification:"Correto. É a definição de crimes de mera conduta."},
+{id:74,block:"BLOCO 21 — Classificação de Crimes",text:"Crimes de dupla subjetividade passiva possuem dois sujeitos passivos simultâneos, como no aborto sem consentimento (feto e gestante) e na violação de correspondência (remetente e destinatário).",answer:true,
+justification:"Correto. São exatamente os exemplos citados no material."},
+{id:75,block:"BLOCO 21 — Classificação de Crimes",text:"No dolo eventual, o agente quer diretamente o resultado, enquanto no dolo direto ele apenas prevê o risco e consente com ele.",answer:false,
+justification:"Errado. É o inverso: o dolo direto é que quer o resultado; o dolo eventual prevê o risco e consente com ele ('tanto faz')."},
+{id:76,block:"BLOCO 21 — Classificação de Crimes",text:"Na culpa imprópria, o agente quer o resultado (age com dolo decorrente de erro evitável), mas a lei determina que responda por crime culposo por razões de política criminal.",answer:true,
+justification:"Correto. É a definição de culpa imprópria (ou culposa por equiparação)."},
+{id:77,block:"BLOCO 21 — Classificação de Crimes",text:"A previsibilidade objetiva no crime culposo refere-se à possibilidade de qualquer pessoa comum, nas mesmas circunstâncias, prever que o resultado ruim poderia acontecer.",answer:true,
+justification:"Correto. É a definição de previsibilidade objetiva (padrão do homem médio)."},
+{id:78,block:"BLOCO 21 — Classificação de Crimes",text:"Na culpa consciente, o agente prevê o resultado e consente com ele, enquanto no dolo eventual ele rejeita sinceramente a possibilidade de o resultado ocorrer.",answer:false,
+justification:"Errado. É o inverso: no dolo eventual o agente prevê e consente (Teoria do Assentimento); na culpa consciente ele prevê, mas rejeita sinceramente a possibilidade, crendo que não ocorrerá."},
+{id:79,block:"BLOCO 21 — Classificação de Crimes",text:"Pela Teoria da Atividade, adotada pelo Art. 4º do CP, considera-se praticado o crime no momento do resultado, ainda que outro seja o momento da ação ou omissão.",answer:false,
+justification:"Errado. É o inverso: considera-se praticado o crime no momento da ação ou omissão, mesmo que outro seja o momento do resultado."},
+{id:80,block:"BLOCO 21 — Classificação de Crimes",text:"Pela Teoria das Normas de Karl Binding, o criminoso, ao cometer o delito, realiza a lei (cumpre o que está escrito no tipo), mas viola a norma (o preceito proibitivo implícito).",answer:true,
+justification:"Correto. É exatamente a formulação da Teoria das Normas de Binding."},
+{id:81,block:"BLOCO 21 — Classificação de Crimes",text:"O Direito Penal Substantivo (Material) define crimes e penas, enquanto o Direito Penal Adjetivo (Processual) regula o instrumento, o rito e a forma de aplicação do direito material.",answer:true,
+justification:"Correto. É a distinção clássica entre direito penal material e processual."},
+{id:82,block:"BLOCO 21 — Classificação de Crimes",text:"O Direito Penal do Autor, adotado no Brasil, pune o indivíduo pelo que ele fez (reprovabilidade da conduta).",answer:false,
+justification:"Errado. O Brasil adota o Direito Penal do Fato (pune pelo que o indivíduo fez); o Direito Penal do Autor é que pune pelo que ele 'é' (periculosidade)."},
+{id:83,block:"BLOCO 21 — Classificação de Crimes",text:"A Escola Clássica, com Carrara como expoente, baseava-se no livre-arbítrio e na retribuição, enquanto a Escola Positivista (Lombroso, Ferri e Garofalo) utilizava método indutivo-experimental e focava na periculosidade.",answer:true,
+justification:"Correto. É exatamente a caracterização dessas duas escolas penais."},
+{id:84,block:"BLOCO 21 — Classificação de Crimes",text:"No Direito Penal Internacional (4ª Velocidade), a soberania dos Estados federados impede o julgamento pelo TPI.",answer:false,
+justification:"Errado. A soberania dos Estados federados não impede o julgamento pelo TPI; é em uma confederação que os Estados soberanos poderiam recusar a jurisdição supranacional."},
+{id:85,block:"BLOCO 21 — Classificação de Crimes",text:"O Brasil, como Estado independente, teve três Códigos Penais: o de 1830 (Império), o de 1890 (República) e o de 1940 (vigente, com reforma em 1984).",answer:true,
+justification:"Correto. São esses os três Códigos Penais da história do Brasil independente."},
+{id:86,block:"BLOCO 21 — Classificação de Crimes",text:"O autor do projeto que deu origem ao Código Penal de 1940 foi Nelson Hungria.",answer:false,
+justification:"Errado. O autor do projeto foi Alcântara Machado."},
+{id:87,block:"BLOCO 21 — Classificação de Crimes",text:"A Interpretação Autêntica é aquela realizada pelo próprio legislador através de outra norma, tendo eficácia ex tunc (retroage sempre).",answer:true,
+justification:"Correto. É a definição de interpretação autêntica e seu efeito retroativo."},
+{id:88,block:"BLOCO 21 — Classificação de Crimes",text:"Na Interpretação Extensiva, a própria lei traz fórmula aberta após exemplos, permitindo ao juiz encontrar situações análogas; já a Interpretação Analógica amplia o significado da palavra da lei para alcançar o que o legislador queria.",answer:false,
+justification:"Errado. As definições estão trocadas: a Extensiva amplia o significado da palavra da lei (a lei disse menos do que queria); a Analógica é que traz fórmula aberta após exemplos."},
+{id:89,block:"BLOCO 21 — Classificação de Crimes",text:"A analogia in malam partem é permitida no Direito Penal brasileiro, desde que beneficie a sociedade.",answer:false,
+justification:"Errado. É proibida pelo desdobramento Lex Stricta do Princípio da Reserva Legal, que veda a analogia para prejudicar o réu."},
+{id:90,block:"BLOCO 21 — Classificação de Crimes",text:"A introdução do Princípio da Insignificância no sistema penal moderno é atribuída a Claus Roxin.",answer:true,
+justification:"Correto. A atribuição é a Claus Roxin."},
+
+// ---------------- BLOCO 22 — FECHAMENTO ----------------
+{id:91,block:"BLOCO 22 — Fechamento",text:"A Escola Positivista utilizou o método indutivo-experimental (empírico), vendo o crime como fenômeno biossocial, com Lombroso, Ferri e Garofalo como expoentes.",answer:true,
+justification:"Correto. É a caracterização da Escola Positivista apresentada no material."},
+{id:92,block:"BLOCO 22 — Fechamento",text:"A Tipicidade Conglobante de Zaffaroni é apenas a adequação formal da conduta à letra da lei, sem qualquer outro elemento.",answer:false,
+justification:"Errado. A Tipicidade Conglobante é a soma da tipicidade formal com a antinormatividade — o fato não pode ser determinado ou fomentado por outra norma do ordenamento."},
+{id:93,block:"BLOCO 22 — Fechamento",text:"A Teoria Causalista surgiu sob influência do Positivismo do século XIX, buscando aplicar o método das ciências naturais ao Direito Penal.",answer:true,
+justification:"Correto. É essa a relação histórica apontada entre Revolução Industrial, Positivismo e Teoria Causalista."},
+{id:94,block:"BLOCO 22 — Fechamento",text:"O Direito Penal moderno adota o paternalismo rígido e direto, prevendo prisão sempre que um bem estiver protegido na Constituição.",answer:false,
+justification:"Errado. O Direito Penal moderno rejeita o paternalismo rígido — não é porque algo está na Constituição que deve necessariamente haver punição com prisão; o DP é a ultima ratio."},
+{id:95,block:"BLOCO 22 — Fechamento",text:"A Política Criminal serve de ponte entre a Criminologia e o Direito Penal, selecionando quais bens merecem proteção penal.",answer:true,
+justification:"Correto. É essa a função da Política Criminal segundo o material."},
+{id:96,block:"BLOCO 22 — Fechamento",text:"Segundo Zaffaroni, a Criminologia é a ciência exclusivamente normativa que estuda apenas a lei penal.",answer:false,
+justification:"Errado. Para Zaffaroni, a Criminologia é ciência empírica que estuda o crime, o criminoso, a vítima e o controle social."},
+{id:97,block:"BLOCO 22 — Fechamento",text:"O bem jurídico Coletivo Puro protege o Estado ou a sociedade sem vinculação direta a indivíduos (ex.: Administração Pública); o Coletivo Aparente (Vago) visa proteger bens individuais de forma antecipada (ex.: incolumidade pública).",answer:true,
+justification:"Correto. É a distinção apresentada entre bem jurídico coletivo puro e aparente."},
+{id:98,block:"BLOCO 22 — Fechamento",text:"Crimes de Dupla Subjetividade Passiva possuem apenas um sujeito passivo, ainda que de forma indireta.",answer:false,
+justification:"Errado. Possuem dois sujeitos passivos simultâneos, como no aborto sem consentimento (feto e gestante) e na violação de correspondência (remetente e destinatário)."},
+{id:99,block:"BLOCO 22 — Fechamento",text:"Pelo Tema 1.169 do STF, a identificação de perfil genético (DNA) de condenados por crimes hediondos viola o nemo tenetur se detegere, sendo inconstitucional.",answer:false,
+justification:"Errado. O STF decidiu que é constitucional — trata-se de forma de identificação criminal semelhante à coleta de digitais, não violando o nemo tenetur se detegere."},
+{id:100,block:"BLOCO 22 — Fechamento",text:"O uso de narcóticos para reduzir a resistência da vítima e subtrair seus bens configura furto, e não roubo.",answer:false,
+justification:"Errado. Configura Roubo com Violência Impópria (Art. 157, caput, parte final, CP), e não furto ou estelionato."},
+{id:101,block:"BLOCO 22 — Fechamento",text:"No crime de roubo, a consumação ocorre com a inversão da posse, sendo desnecessária a posse mansa e pacífica ou que o ladrão saia da esfera de vigilância da vítima.",answer:true,
+justification:"Correto. O roubo se consuma com a simples inversão da posse, conforme entendimento consolidado."},
+{id:102,block:"BLOCO 22 — Fechamento",text:"O consentimento da vítima é relevante no crime de estupro de vulnerável (menor de 14 anos), podendo afastar a tipicidade.",answer:false,
+justification:"Errado. É absolutamente irrelevante o consentimento ou a experiência sexual anterior da vítima menor de 14 anos."},
+{id:103,block:"BLOCO 22 — Fechamento",text:"O policial fora de serviço não tem dever jurídico de agir para evitar crimes, respondendo apenas se estiver em serviço.",answer:false,
+justification:"Errado. O policial tem dever jurídico de agir mesmo fora de serviço (Art. 13, §2º, 'a', CP); se omitir-se, pode responder na modalidade omissiva imprópria."},
+{id:104,block:"BLOCO 22 — Fechamento",text:"A confissão informal feita aos policiais no momento da prisão tem, em regra, valor legal para embasar condenação, independentemente de formalização.",answer:false,
+justification:"Errado. Em regra, não tem valor; o STJ exige que a confissão seja formalizada, documentada e que o preso seja informado de seus direitos, incluindo o direito ao silêncio (Aviso de Miranda)."},
+{id:105,block:"BLOCO 22 — Fechamento",text:"O réu pode renunciar às garantias do devido processo legal, por se tratarem de direitos disponíveis.",answer:false,
+justification:"Errado. Essas garantias são irrenunciáveis, por serem fundamentais para a validade do processo."},
+{id:106,block:"BLOCO 22 — Fechamento",text:"A fixação da medida de segurança vincula-se à periculosidade do agente, e não à gravidade abstrata do delito.",answer:true,
+justification:"Correto. A medida de segurança foca na periculosidade do agente, não na gravidade do delito."},
+{id:107,block:"BLOCO 22 — Fechamento",text:"Segundo a tese do STJ no caso Plácido de Sá Carvalho, cada dia preso em condições degradantes deve ser contado em dobro, com fundamento no Princípio da Individualização da Pena.",answer:false,
+justification:"Errado. O fundamento é o Princípio da Humanidade das Penas e a Dignidade da Pessoa Humana, e não o princípio da individualização da pena."},
+{id:108,block:"BLOCO 22 — Fechamento",text:"A homologação de sentença estrangeira no Brasil (Art. 9º CP) serve para obrigar à reparação do dano/restituições e para imposição de medida de segurança, não para cumprimento genérico de pena privativa de liberdade.",answer:true,
+justification:"Correto. São esses os efeitos previstos no Art. 9º do CP para a homologação de sentença estrangeira."},
+{id:109,block:"BLOCO 22 — Fechamento",text:"O princípio da insignificância pode ser aplicado ao crime de Moeda Falsa, pois o bem jurídico protegido é de natureza patrimonial e de pequena monta.",answer:false,
+justification:"Errado. Não se aplica; na moeda falsa o bem jurídico protegido é a fé pública, que é intangível."},
+{id:110,block:"BLOCO 22 — Fechamento",text:"A ultra-atividade da norma penal benéfica serve para beneficiar o réu, não podendo ser usada para garantir condenação ou segurança jurídica contra ele.",answer:true,
+justification:"Correto. A ultra-atividade só pode ser usada em favor do réu (lei antiga melhor), nunca para garantir condenação."}
+];
+
+const TOTAL = QUESTIONS.length;
+const STORAGE_KEY = "penal_p3_blocos16a22_quiz_progress_v1";
+
+let state = {
+  current: 0,
+  answers: {} // id -> {selected:bool, correct:bool, guess:'sabia'|'chute'|null}
+};
+
+/* ---------- STORAGE (window.storage com fallback para localStorage) ---------- */
+async function storageGet(key){
+  if (window.storage){
+    try{
+      const r = await window.storage.get(key, false);
+      return r ? JSON.parse(r.value) : null;
+    }catch(e){ return null; }
+  }
+  try{
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : null;
+  }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  if (window.storage){
+    try{ await window.storage.set(key, JSON.stringify(value), false); return true; }
+    catch(e){ return false; }
+  }
+  try{ localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch(e){ return false; }
+}
+
+async function saveState(){
+  await storageSet(STORAGE_KEY, state);
+  const hint = document.getElementById("saveHint");
+  if (hint){
+    hint.textContent = "✓ Progresso salvo automaticamente — " + new Date().toLocaleTimeString("pt-BR");
+  }
+}
+
+async function loadState(){
+  const saved = await storageGet(STORAGE_KEY);
+  if (saved && typeof saved === "object" && saved.answers){
+    state = saved;
+    if (typeof state.current !== "number" || state.current < 0 || state.current >= TOTAL){
+      state.current = 0;
+    }
+  }
+}
+
+/* ---------- HELPERS ---------- */
+function getQuestion(idx){ return QUESTIONS[idx]; }
+function getAnswerData(id){ return state.answers[id] || null; }
+
+function computeStats(){
+  const ids = Object.keys(state.answers);
+  let correct=0, wrong=0, guessCorrect=0;
+  ids.forEach(id=>{
+    const a = state.answers[id];
+    if (a.correct){ correct++; if (a.guess==="chute") guessCorrect++; }
+    else { wrong++; }
+  });
+  return {answered: ids.length, correct, wrong, guessCorrect};
+}
+
+/* ---------- RENDER: STATS BAR ---------- */
+function renderStats(){
+  const s = computeStats();
+  const pct = s.answered ? Math.round((s.correct/s.answered)*100) : 0;
+  document.getElementById("statsBar").innerHTML = `
+    <div class="stat"><div class="num">${s.answered}/${TOTAL}</div><div class="lbl">Respondidas</div></div>
+    <div class="stat correct"><div class="num">${s.correct}</div><div class="lbl">Acertos</div></div>
+    <div class="stat wrong"><div class="num">${s.wrong}</div><div class="lbl">Erros</div></div>
+    <div class="stat"><div class="num">${pct}%</div><div class="lbl">% de acerto</div></div>
+    <div class="stat guess"><div class="num">${s.guessCorrect}</div><div class="lbl">Acertos no chute</div></div>
+  `;
+}
+
+/* ---------- RENDER: PROGRESS + SELECT ---------- */
+function renderProgress(){
+  const s = computeStats();
+  const pct = Math.round((s.answered/TOTAL)*100);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressText").textContent = `${s.answered}/${TOTAL} respondidas`;
+  document.getElementById("progressPct").textContent = pct + "%";
+}
+
+function renderSelect(){
+  const sel = document.getElementById("qSelect");
+  sel.innerHTML = "";
+  QUESTIONS.forEach((q, idx)=>{
+    const a = getAnswerData(q.id);
+    let icon = "⬜";
+    if (a) icon = a.correct ? "✅" : "❌";
+    const opt = document.createElement("option");
+    opt.value = idx;
+    opt.textContent = `${icon} Questão ${idx+1} — ${q.block.split("—")[0].trim()}`;
+    if (idx === state.current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+/* ---------- RENDER: QUESTION CARD ---------- */
+function renderQuestionCard(){
+  const idx = state.current;
+  const q = getQuestion(idx);
+  const a = getAnswerData(q.id);
+  const card = document.getElementById("questionCard");
+
+  let html = `
+    <span class="badge">${q.block}</span>
+    <div class="qnum">Questão ${idx+1} de ${TOTAL}</div>
+    <div class="qtext">${q.text}</div>
+  `;
+
+  if (!a){
+    html += `
+      <div class="vf-buttons">
+        <button class="btn-v" onclick="answerQuestion(true)">✔ VERDADEIRO</button>
+        <button class="btn-f" onclick="answerQuestion(false)">✘ FALSO</button>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="vf-buttons">
+        <button class="btn-v" disabled>✔ VERDADEIRO</button>
+        <button class="btn-f" disabled>✘ FALSO</button>
+      </div>
+      <div class="feedback">
+        <div class="result-banner ${a.correct ? "correct" : "wrong"}">
+          ${a.correct ? "✅ Você ACERTOU esta questão." : "❌ Você ERROU esta questão."}
+        </div>
+        <div class="gabarito-banner ${q.answer ? "is-true" : "is-false"}">
+          Gabarito: a afirmativa é ${q.answer ? "VERDADEIRA" : "FALSA"}
+          ${!q.answer ? "" : ""}
+          (você marcou ${a.selected ? "VERDADEIRO" : "FALSO"})
+        </div>
+        <div class="justification"><b>Justificativa:</b> ${q.justification}</div>
+        ${renderGuessArea(q, a)}
+        <div><span class="redo-link" onclick="redoQuestion(${q.id})">↺ Refazer esta questão</span></div>
+      </div>
+    `;
+  }
+
+  card.innerHTML = html;
+  document.getElementById("btnPrev").disabled = (idx === 0);
+  document.getElementById("btnNext").disabled = (idx === TOTAL-1);
+}
+
+function renderGuessArea(q, a){
+  if (!a.correct) return "";
+  if (a.guess){
+    const label = a.guess === "sabia" ? "🧠 Marcado como: eu sabia" : "🎲 Marcado como: acertei no chute";
+    const cls = a.guess === "sabia" ? "sabia" : "chute";
+    return `<div class="guess-tag ${cls}">${label}</div>`;
+  }
+  return `
+    <div class="guess-row">
+      <p>Como você chegou nessa resposta correta?</p>
+      <div class="guess-btns">
+        <button onclick="setGuess(${q.id}, 'sabia')">🧠 Eu sabia</button>
+        <button onclick="setGuess(${q.id}, 'chute')">🎲 Acertei no chute</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- RENDER: REVIEW TAB ---------- */
+function renderReview(){
+  const wrongBox = document.getElementById("reviewWrong");
+  const guessBox = document.getElementById("reviewGuess");
+  let wrongHtml = "";
+  let guessHtml = "";
+
+  QUESTIONS.forEach(q=>{
+    const a = getAnswerData(q.id);
+    if (!a) return;
+    if (!a.correct){
+      wrongHtml += `
+        <div class="review-item">
+          <span class="badge">${q.block}</span>
+          <div class="qtext">${q.text}</div>
+          <div class="gabarito-banner ${q.answer ? "is-true" : "is-false"}">Gabarito: ${q.answer ? "VERDADEIRO" : "FALSO"} (você marcou ${a.selected ? "VERDADEIRO" : "FALSO"})</div>
+          <div class="justification"><b>Justificativa:</b> ${q.justification}</div>
+          <span class="redo-link" onclick="redoQuestion(${q.id})">↺ Refazer esta questão</span>
+        </div>
+      `;
+    } else if (a.guess === "chute"){
+      guessHtml += `
+        <div class="review-item">
+          <span class="badge">${q.block}</span>
+          <div class="qtext">${q.text}</div>
+          <div class="gabarito-banner ${q.answer ? "is-true" : "is-false"}">Gabarito: ${q.answer ? "VERDADEIRO" : "FALSO"} (acerto no chute)</div>
+          <div class="justification"><b>Justificativa:</b> ${q.justification}</div>
+          <span class="redo-link" onclick="redoQuestion(${q.id})">↺ Refazer esta questão</span>
+        </div>
+      `;
+    }
+  });
+
+  wrongBox.innerHTML = wrongHtml || `<div class="empty-state">Nenhum erro registrado até agora. 🎉</div>`;
+  guessBox.innerHTML = guessHtml || `<div class="empty-state">Nenhum acerto no chute registrado até agora.</div>`;
+}
+
+/* ---------- ACTIONS ---------- */
+async function answerQuestion(selected){
+  const q = getQuestion(state.current);
+  const correct = (selected === q.answer);
+  state.answers[q.id] = {selected, correct, guess: null};
+  await saveState();
+  rerenderAll();
+}
+
+async function setGuess(id, guessType){
+  if (state.answers[id]){
+    state.answers[id].guess = guessType;
+    await saveState();
+    rerenderAll();
+  }
+}
+
+async function redoQuestion(id){
+  delete state.answers[id];
+  const idx = QUESTIONS.findIndex(q=>q.id===id);
+  if (idx >= 0) state.current = idx;
+  await saveState();
+  switchTab("quiz");
+  rerenderAll();
+}
+
+async function goPrev(){
+  if (state.current > 0){ state.current--; await saveState(); rerenderAll(); }
+}
+async function goNext(){
+  if (state.current < TOTAL-1){ state.current++; await saveState(); rerenderAll(); }
+}
+async function jumpTo(idx){
+  state.current = parseInt(idx,10);
+  await saveState();
+  rerenderAll();
+}
+
+async function resetProgress(){
+  if (!confirm("Tem certeza que deseja reiniciar todo o progresso deste quiz? Essa ação não pode ser desfeita.")) return;
+  state = {current:0, answers:{}};
+  await saveState();
+  rerenderAll();
+}
+
+function downloadHTML(){
+  const blob = new Blob(["<!DOCTYPE html>\n" + document.documentElement.outerHTML], {type:"text/html"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quiz_direito_penal_blocos16-22.html";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function switchTab(tab){
+  document.getElementById("panelQuiz").classList.toggle("active", tab==="quiz");
+  document.getElementById("panelReview").classList.toggle("active", tab==="review");
+  document.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.tab === tab);
+  });
+  if (tab === "review") renderReview();
+}
+
+function rerenderAll(){
+  renderStats();
+  renderProgress();
+  renderSelect();
+  renderQuestionCard();
+  if (document.getElementById("panelReview").classList.contains("active")) renderReview();
+}
+
+/* ---------- WIRE UP EVENTS ---------- */
+document.getElementById("btnPrev").addEventListener("click", goPrev);
+document.getElementById("btnNext").addEventListener("click", goNext);
+document.getElementById("btnReset").addEventListener("click", resetProgress);
+document.getElementById("btnDownload").addEventListener("click", downloadHTML);
+document.getElementById("qSelect").addEventListener("change", (e)=>jumpTo(e.target.value));
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>switchTab(btn.dataset.tab));
+});
+
+/* ---------- INIT ---------- */
+(async function init(){
+  await loadState();
+  rerenderAll();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz V/F — Erro no Direito Penal (Bloco 2)</title>
+<style>
+  :root{
+    --navy:#152238;
+    --navy-2:#1d2f4d;
+    --paper:#ece5d3;
+    --paper-2:#f4efe2;
+    --gold:#b9924f;
+    --gold-dark:#8f6f36;
+    --ink:#26160a;
+    --green:#3c6e4a;
+    --red:#9c3b30;
+    --line: rgba(185,146,79,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at top left, #21324f 0%, var(--navy) 55%, #0f1826 100%);
+    font-family: 'Iowan Old Style','Georgia','Times New Roman',serif;
+    color: var(--paper);
+    display:flex;
+    justify-content:center;
+    padding: 28px 14px 60px;
+  }
+  .stamp{
+    position:fixed;
+    top:14px; right:18px;
+    font-family: 'Courier New', monospace;
+    font-size:10px;
+    letter-spacing:2px;
+    color: rgba(185,146,79,0.5);
+    border:1px solid var(--line);
+    padding:4px 8px;
+    border-radius:3px;
+    transform: rotate(2deg);
+    pointer-events:none;
+  }
+  .app{
+    width:100%;
+    max-width: 720px;
+  }
+  header.top{
+    text-align:center;
+    margin-bottom: 22px;
+    position:relative;
+  }
+  header.top .eyebrow{
+    font-family:'Courier New', monospace;
+    font-size:11px;
+    letter-spacing:4px;
+    text-transform:uppercase;
+    color: var(--gold);
+    margin-bottom:6px;
+  }
+  header.top h1{
+    font-size: 28px;
+    margin:0;
+    font-weight:600;
+    letter-spacing:0.5px;
+    color: var(--paper-2);
+  }
+  header.top .sub{
+    font-size:13px;
+    color: rgba(236,229,211,0.55);
+    margin-top:6px;
+    font-family: 'Courier New', monospace;
+    letter-spacing:1px;
+  }
+
+  .controls-bar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:18px;
+  }
+  select, .btn{
+    font-family: 'Courier New', monospace;
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    background: var(--navy-2);
+    color: var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:9px 14px;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  select:hover, .btn:hover{ border-color: var(--gold); color:#fff; }
+  .btn.gold{ background: var(--gold-dark); border-color: var(--gold); color:#fff8ec; }
+  .btn.gold:hover{ background: var(--gold); }
+  .btn:disabled{ opacity:.35; cursor:not-allowed; }
+
+  .scorebar{
+    display:grid;
+    grid-template-columns: repeat(4,1fr);
+    gap:8px;
+    margin-bottom: 20px;
+  }
+  .score-cell{
+    background: rgba(255,255,255,0.04);
+    border:1px solid var(--line);
+    border-radius:6px;
+    text-align:center;
+    padding:10px 4px;
+  }
+  .score-cell .num{
+    font-size:20px;
+    font-weight:700;
+    color: var(--paper-2);
+    font-family:'Courier New',monospace;
+  }
+  .score-cell .lbl{
+    font-size:9.5px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color: rgba(236,229,211,0.55);
+    margin-top:2px;
+  }
+  .score-cell.acertos .num{ color:#7fbf94; }
+  .score-cell.erros .num{ color:#e18b7f; }
+
+  .progress-track{
+    width:100%;
+    height:4px;
+    background: rgba(255,255,255,0.08);
+    border-radius:2px;
+    margin-bottom: 22px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    transition: width .25s ease;
+  }
+
+  .card{
+    background: var(--paper-2);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 30px 28px 26px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35), 0 0 0 1px rgba(185,146,79,0.25);
+    position:relative;
+  }
+  .card::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:4px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+    border-radius: 10px 10px 0 0;
+  }
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom: 16px;
+  }
+  .qnum{
+    font-family:'Courier New',monospace;
+    font-size:12px;
+    letter-spacing:1px;
+    color: var(--gold-dark);
+    font-weight:700;
+  }
+  .cat-tag{
+    font-family:'Courier New',monospace;
+    font-size:10px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    background: rgba(185,146,79,0.15);
+    color: var(--gold-dark);
+    padding:3px 9px;
+    border-radius:20px;
+    border:1px solid rgba(185,146,79,0.4);
+  }
+  .statement{
+    font-size: 19px;
+    line-height:1.55;
+    margin: 6px 0 26px;
+    font-weight:500;
+  }
+  .vf-row{
+    display:flex;
+    gap:14px;
+    margin-bottom: 6px;
+  }
+  .vf-btn{
+    flex:1;
+    padding: 15px 10px;
+    font-size:15px;
+    font-family: 'Iowan Old Style','Georgia',serif;
+    font-weight:700;
+    letter-spacing:1px;
+    border-radius:8px;
+    border:2px solid #cbb98a;
+    background: #fffdf7;
+    color: var(--ink);
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .vf-btn:hover:not(:disabled){ background: var(--gold); color:#fff; border-color: var(--gold); }
+  .vf-btn:disabled{ cursor:default; }
+  .vf-btn.chosen-v{ background: #2e4a63; color:#fff; border-color:#2e4a63; }
+  .vf-btn.chosen-f{ background: #6b3a3a; color:#fff; border-color:#6b3a3a; }
+  .vf-btn.dim{ opacity:.4; }
+
+  .reveal{
+    margin-top:20px;
+    border-radius:8px;
+    padding:18px 18px;
+    border-left: 5px solid;
+    animation: fadein .25s ease;
+  }
+  @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+  .reveal.ok{ background: #e9f4ec; border-color: var(--green); }
+  .reveal.no{ background: #f7e9e6; border-color: var(--red); }
+  .reveal .verdict{
+    font-weight:800;
+    font-size:14px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .reveal.ok .verdict{ color: var(--green); }
+  .reveal.no .verdict{ color: var(--red); }
+  .reveal .truth{
+    font-size:13px;
+    font-weight:700;
+    margin-bottom:10px;
+    color:#4a3a20;
+  }
+  .reveal .just{
+    font-size:14.5px;
+    line-height:1.55;
+    color:#3a2c1a;
+  }
+
+  .guess-row{
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px dashed rgba(0,0,0,0.15);
+  }
+  .guess-row p{
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:#6b5a3d;
+    margin:0 0 8px;
+    font-family:'Courier New',monospace;
+  }
+  .guess-btns{ display:flex; gap:10px; }
+  .guess-btn{
+    flex:1;
+    padding:9px;
+    font-size:12.5px;
+    border-radius:6px;
+    border:1.5px solid #cbb98a;
+    background:#fff;
+    cursor:pointer;
+    font-family: inherit;
+  }
+  .guess-btn:hover{ background:#f1e6cb; }
+  .guess-btn.marked{ background: var(--gold-dark); color:#fff; border-color:var(--gold-dark); }
+
+  .nav-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:22px;
+    gap:10px;
+  }
+  .nav-row .btn{ flex:1; text-align:center; }
+
+  .footer-actions{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:22px;
+  }
+
+  .summary-panel{
+    background: var(--paper-2);
+    color: var(--ink);
+    border-radius:10px;
+    padding:26px;
+    margin-top:18px;
+  }
+  .summary-panel h2{
+    font-size:18px;
+    margin:0 0 14px;
+    color: var(--gold-dark);
+  }
+  .summary-list{ list-style:none; padding:0; margin:0; }
+  .summary-list li{
+    padding:10px 12px;
+    border-radius:6px;
+    margin-bottom:8px;
+    font-size:13.5px;
+    cursor:pointer;
+    border-left:4px solid;
+    background: rgba(0,0,0,0.03);
+  }
+  .summary-list li:hover{ background: rgba(0,0,0,0.07); }
+  .summary-list li.erro{ border-color: var(--red); }
+  .summary-list li.chute{ border-color: var(--gold-dark); }
+  .empty-note{ font-size:13px; color:#7a6c50; font-style:italic; }
+
+  .toast{
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold-dark);
+    color: #fff8ec;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+    z-index: 50;
+  }
+  .toast.show{ opacity: 1; }
+
+  @media (max-width:480px){
+    .statement{ font-size:16.5px; }
+    .scorebar{ grid-template-columns: repeat(2,1fr); }
+    .card{ padding:22px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="stamp">CP · ART. 20 / 21</div>
+<div class="app">
+
+  <header class="top">
+    <div class="eyebrow">Delegado PC-MG · Bloco 2</div>
+    <h1>Teoria do Crime I — Erro Penal</h1>
+    <div class="sub">quiz verdadeiro ou falso · 33 questões</div>
+  </header>
+
+  <div class="controls-bar">
+    <select id="categorySelect"></select>
+    <button class="btn" id="btnResumo">Ver resumo</button>
+    <button class="btn" id="btnReset">Reiniciar progresso</button>
+    <button class="btn gold" id="btnDownload">Baixar cópia HTML</button>
+  </div>
+
+  <div class="scorebar">
+    <div class="score-cell acertos"><div class="num" id="scAcertos">0</div><div class="lbl">Acertos</div></div>
+    <div class="score-cell erros"><div class="num" id="scErros">0</div><div class="lbl">Erros</div></div>
+    <div class="score-cell"><div class="num" id="scPct">0%</div><div class="lbl">Aproveitamento</div></div>
+    <div class="score-cell"><div class="num" id="scResp">0/0</div><div class="lbl">Respondidas</div></div>
+  </div>
+
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+  <div class="card" id="quizCard">
+    <div class="card-top">
+      <span class="qnum" id="qNum">Q. 1 / 33</span>
+      <span class="cat-tag" id="qCat">CASO ADONIS</span>
+    </div>
+    <div class="statement" id="qStatement">Carregando...</div>
+
+    <div class="vf-row" id="vfRow">
+      <button class="vf-btn" id="btnV" data-v="true">VERDADEIRO</button>
+      <button class="vf-btn" id="btnF" data-v="false">FALSO</button>
+    </div>
+
+    <div id="revealBox"></div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn" id="btnPrev">⟵ Anterior</button>
+    <button class="btn" id="btnNext">Próxima ⟶</button>
+  </div>
+
+  <div class="footer-actions">
+    <span style="font-size:11px;color:rgba(236,229,211,0.4);font-family:'Courier New',monospace;">
+      progresso salvo automaticamente
+    </span>
+  </div>
+
+  <div class="summary-panel" id="summaryPanel" style="display:none;">
+    <h2>Resumo para revisão</h2>
+    <div>
+      <strong style="font-size:13px;color:var(--red);">Questões que você errou</strong>
+      <ul class="summary-list" id="listErros"></ul>
+    </div>
+    <div style="margin-top:16px;">
+      <strong style="font-size:13px;color:var(--gold-dark);">Acertou no chute (revisar teoria)</strong>
+      <ul class="summary-list" id="listChutes"></ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ BANCO DE QUESTÕES (extraído fielmente do material enviado) ============
+const QUESTIONS = [
+  // --- QUESTÃO 7: CASO ADONIS ---
+  {id:1, cat:'adonis', text:'Erro de tipo permissivo (descriminante putativa por erro de tipo) ocorre quando o agente tem falsa percepção sobre os pressupostos fáticos de uma causa de justificação, acreditando estar presente uma excludente de ilicitude que, na realidade, não existe.',
+   answer:true, just:'O material define exatamente assim: o agente possui falsa percepção sobre os PRESSUPOSTOS FÁTICOS de uma causa de justificação (legítima defesa, estado de necessidade, estrito cumprimento do dever legal ou exercício regular de direito), acreditando estar presente uma excludente que, na verdade, não existe.'},
+  {id:2, cat:'adonis', text:'O erro de tipo permissivo consiste na falsa percepção do agente quanto à norma penal proibitiva, e não quanto aos fatos.',
+   answer:false, just:'Isso descreveria o erro de PROIBIÇÃO, não o permissivo. O erro de tipo permissivo é sobre os FATOS (pressupostos fáticos de uma causa de justificação) — o agente tem percepção equivocada da realidade, não da norma.'},
+  {id:3, cat:'adonis', text:'No caso de Adonis, o erro cometido foi um erro de tipo permissivo, pois ele imaginou, equivocadamente, estar agindo em legítima defesa ao confundir o vizinho alcoolizado com um invasor perigoso.',
+   answer:true, just:'É exatamente o que o material relata: Adonis teve falsa percepção da realidade, confundindo o vizinho alcoolizado com um invasor perigoso, imaginando estar em legítima defesa — caracterizando o erro de tipo permissivo.'},
+  {id:4, cat:'adonis', text:'No caso de Adonis, o erro cometido foi um erro de proibição, já que ele sabia da realidade dos fatos, mas desconhecia a ilicitude de sua conduta.',
+   answer:false, just:'O material classifica o caso Adonis expressamente como erro de tipo PERMISSIVO — falsa percepção da realidade (achou que o vizinho era um invasor) — e não como erro de proibição.'},
+  {id:5, cat:'adonis', text:'O erro de tipo permissivo inevitável (escusável) isenta o agente de pena, pois não há dolo nem culpa, com base no art. 20, §1º, 1ª parte, do CP.',
+   answer:true, just:'O material afirma que o erro inevitável ISENTA DE PENA — não há dolo, nem culpa (pois o erro era inevitável para qualquer pessoa nas mesmas circunstâncias), conforme art. 20, §1º, 1ª parte, do CP.'},
+  {id:6, cat:'adonis', text:'O erro de tipo permissivo inevitável apenas reduz a pena de 1/6 a 1/3, não chegando a isentar o agente.',
+   answer:false, just:'Essa é a consequência do erro de PROIBIÇÃO evitável (art. 21 CP), não do erro de tipo permissivo inevitável. O inevitável ISENTA de pena por completo, conforme art. 20, §1º, 1ª parte, do CP.'},
+  {id:7, cat:'adonis', text:'No erro de tipo permissivo evitável, exclui-se o dolo, mas o agente pode responder a título de culpa, se o fato for previsto como crime culposo, conforme art. 20, §1º, 2ª parte, do CP.',
+   answer:true, just:'Conforme o material: o erro evitável não isenta de pena quanto ao dolo (que é excluído), mas o agente RESPONDE POR CULPA, se o fato for punível como crime culposo — art. 20, §1º, 2ª parte, do CP.'},
+  {id:8, cat:'adonis', text:'No erro de tipo permissivo evitável, o agente sempre responde por dolo, pois o erro evitável não tem qualquer efeito sobre o elemento subjetivo do crime.',
+   answer:false, just:'O erro evitável EXCLUI o dolo (o agente não responde por crime doloso); pode, no entanto, responder por culpa, se prevista em lei. Logo, o erro evitável sim produz efeito sobre o elemento subjetivo.'},
+
+  // --- BLOCO DE REVISÃO: ERRO NO DIREITO PENAL ---
+  {id:9, cat:'revisao', text:'O erro de tipo consiste em falsa percepção da realidade, ao passo que o erro de proibição pressupõe percepção correta dos fatos, mas equívoco quanto à regra de conduta (ilicitude).',
+   answer:true, just:'É a distinção fundamental do material: erro de tipo = falsa percepção da REALIDADE (ex.: pegar mochila alheia pensando ser a sua); erro de proibição = percepção correta da realidade, mas engano quanto à REGRA DE CONDUTA (ex.: holandês que usa maconha no Brasil pensando ser permitido).'},
+  {id:10, cat:'revisao', text:'Erro de tipo e erro de proibição são sinônimos e produzem exatamente os mesmos efeitos jurídicos no ordenamento penal brasileiro.',
+   answer:false, just:'São institutos distintos: o erro de tipo afeta a percepção da realidade e pode excluir dolo/culpa (art. 20 CP); o erro de proibição afeta a consciência da ilicitude e pode isentar de pena ou apenas diminuí-la (art. 21 CP). Os critérios de aferição e as consequências também diferem.'},
+  {id:11, cat:'revisao', text:'O Código Penal brasileiro trata erro (falsa percepção) e ignorância (desconhecimento total) da mesma forma, muito embora sejam tecnicamente distintos.',
+   answer:true, just:'O material confirma: tecnicamente erro e ignorância são diferentes, mas o CP os equipara, tratando ambos igualmente como "erro".'},
+  {id:12, cat:'revisao', text:'O Código Penal distingue expressamente erro de ignorância, atribuindo consequências jurídicas diferentes a cada um.',
+   answer:false, just:'O contrário é verdadeiro: o CP NÃO distingue — equipara erro e ignorância, tratando-os da mesma forma juridicamente, apesar de tecnicamente serem conceitos diferentes.'},
+  {id:13, cat:'revisao', text:'O erro de tipo essencial pode ser classificado como inevitável (também chamado de escusável, desculpável ou invencível) ou evitável (também chamado de inescusável, indesculpável ou vencível).',
+   answer:true, just:'É o mnemônico do material: INEVITÁVEL = ESCUSÁVEL = DESCULPÁVEL = INVENCÍVEL; EVITÁVEL = INESCUSÁVEL = INDESCULPÁVEL = VENCÍVEL.'},
+  {id:14, cat:'revisao', text:'O termo "evitável" é sinônimo de "escusável", enquanto "inevitável" é sinônimo de "inescusável", segundo a classificação do erro de tipo essencial.',
+   answer:false, just:'Os termos estão invertidos. Correto é: INEVITÁVEL = escusável/desculpável/invencível; EVITÁVEL = inescusável/indesculpável/vencível.'},
+  {id:15, cat:'revisao', text:'O erro de tipo essencial inevitável exclui tanto o dolo quanto a culpa, gerando a atipicidade total da conduta.',
+   answer:true, just:'O material é claro: o erro inevitável exclui o DOLO (o agente não tem consciência do que faz) E exclui a CULPA (o resultado era imprevisível), resultando em atipicidade total.'},
+  {id:16, cat:'revisao', text:'O erro de tipo essencial inevitável exclui apenas o dolo, permitindo, ainda assim, a punição do agente a título de culpa.',
+   answer:false, just:'Essa é a regra do erro EVITÁVEL, não do inevitável. O erro inevitável exclui dolo E culpa (atipicidade total); é o evitável que exclui o dolo mas permite punição por culpa, se prevista em lei.'},
+  {id:17, cat:'revisao', text:'O erro de tipo essencial evitável exclui o dolo, mas permite a punição a título de culpa, caso essa modalidade esteja prevista em lei.',
+   answer:true, just:'Conforme o material: o erro evitável exclui o dolo, mas PUNE A CULPA se prevista em lei, pois o resultado era previsível e o agente poderia ter evitado o erro com maior diligência.'},
+  {id:18, cat:'revisao', text:'O erro de tipo essencial evitável não produz qualquer efeito sobre o dolo, mantendo a responsabilização plena do agente.',
+   answer:false, just:'O erro evitável SIM produz efeito: exclui o dolo (o agente não responde por crime doloso), podendo responder por culpa apenas se essa modalidade for prevista em lei.'},
+  {id:19, cat:'revisao', text:'Uma das espécies de erro de tipo acidental listadas no material é o erro sobre o objeto.',
+   answer:true, just:'O material lista as espécies de erro de tipo acidental, e o erro sobre o objeto é a primeira delas (item "a").'},
+  {id:20, cat:'revisao', text:'O erro sobre a pessoa é uma das espécies de erro de tipo acidental previstas na classificação estudada.',
+   answer:true, just:'Sim — é o item "b" das espécies de erro de tipo acidental apresentadas no material.'},
+  {id:21, cat:'revisao', text:'O erro na execução, também conhecido como aberratio ictus, é uma espécie de erro de tipo acidental.',
+   answer:true, just:'Correto — é o item "c" da lista: erro na execução (aberratio ictus), conforme o material.'},
+  {id:22, cat:'revisao', text:'O resultado diverso do pretendido, conhecido como aberratio criminis, integra as espécies de erro de tipo acidental.',
+   answer:true, just:'Correto — é o item "d" da lista do material: resultado diverso do pretendido (aberratio criminis).'},
+  {id:23, cat:'revisao', text:'O erro sobre o nexo causal é uma das espécies de erro de tipo acidental.',
+   answer:true, just:'Correto — é o item "e", último da lista de espécies de erro de tipo acidental trazida pelo material.'},
+  {id:24, cat:'revisao', text:'Aberratio ictus é o nome técnico dado ao resultado diverso do pretendido, enquanto aberratio criminis se refere ao erro na execução.',
+   answer:false, just:'Os nomes estão trocados. O correto, segundo o material: aberratio ICTUS = erro NA EXECUÇÃO; aberratio CRIMINIS = resultado DIVERSO DO PRETENDIDO.'},
+  {id:25, cat:'revisao', text:'As espécies de erro de tipo acidental incluem o erro de proibição indireto, segundo a classificação apresentada no material.',
+   answer:false, just:'O material lista apenas 5 espécies de erro de tipo acidental: erro sobre o objeto, erro sobre a pessoa, erro na execução (aberratio ictus), resultado diverso do pretendido (aberratio criminis) e erro sobre o nexo causal. O erro de proibição indireto não consta nessa lista.'},
+  {id:26, cat:'revisao', text:'O erro de proibição inevitável exclui a potencial consciência da ilicitude, tornando o fato inculpável e isentando o agente de pena, nos termos do art. 21 do CP.',
+   answer:true, just:'Conforme o material: o erro de proibição inevitável exclui a POTENCIAL CONSCIÊNCIA DA ILICITUDE, tornando o fato inculpável e isentando de pena, com base no art. 21 do CP.'},
+  {id:27, cat:'revisao', text:'O erro de proibição inevitável é aferido pelo critério do homem médio, da mesma forma que o erro de tipo.',
+   answer:false, just:'O material distingue os critérios: o erro de TIPO usa o critério do HOMEM MÉDIO; já o erro de PROIBIÇÃO usa critério SUBJETIVO (perfil do agente). Não é o mesmo critério.'},
+  {id:28, cat:'revisao', text:'O erro de proibição evitável não isenta de pena, mas autoriza sua diminuição de 1/6 a 1/3, conforme o art. 21 do CP.',
+   answer:true, just:'O material confirma: o erro de proibição evitável apenas DIMINUI a pena de 1/6 a 1/3 (art. 21 CP), não isentando o agente nem excluindo a culpabilidade, apenas a atenuando.'},
+  {id:29, cat:'revisao', text:'O erro de proibição evitável exclui integralmente a culpabilidade do agente, isentando-o de pena.',
+   answer:false, just:'O erro de proibição evitável NÃO isenta de pena e não exclui a culpabilidade — apenas a DIMINUI, de 1/6 a 1/3, conforme art. 21 do CP. Quem isenta de pena é o erro de proibição INEVITÁVEL.'},
+  {id:30, cat:'revisao', text:'O critério utilizado para diferenciar o erro de tipo inevitável do evitável é o do homem médio, ou seja, se qualquer pessoa de diligência comum, nas mesmas circunstâncias, também teria incorrido em erro.',
+   answer:true, just:'Correto conforme o material: o critério do erro de TIPO é o HOMEM MÉDIO — verifica-se se qualquer pessoa de diligência comum, nas mesmas circunstâncias, também teria errado.'},
+  {id:31, cat:'revisao', text:'O critério para diferenciar o erro de tipo inevitável do evitável é o perfil subjetivo do agente, considerando suas características pessoais específicas.',
+   answer:false, just:'Esse é o critério do erro de PROIBIÇÃO, não do erro de tipo. O erro de tipo usa o critério do HOMEM MÉDIO; o perfil subjetivo do agente é usado para aferir o erro de proibição.'},
+  {id:32, cat:'revisao', text:'O critério para diferenciar o erro de proibição inevitável do evitável é o perfil subjetivo do agente, analisando se aquele agente específico poderia ter evitado o erro.',
+   answer:true, just:'Correto conforme o material: o critério do erro de PROIBIÇÃO é o PERFIL SUBJETIVO DO AGENTE — analisa-se se aquele agente específico, com suas características pessoais, poderia ter evitado o erro com esforço razoável.'},
+  {id:33, cat:'revisao', text:'O critério para diferenciar o erro de proibição inevitável do evitável é objetivo, baseado exclusivamente no comportamento do homem médio.',
+   answer:false, just:'O critério do erro de proibição é SUBJETIVO (perfil do próprio agente), não objetivo/homem médio. O critério do homem médio é usado no erro de TIPO.'},
+];
+
+const CATS = {
+  all: 'Todos os temas',
+  adonis: 'Questão 7 — Caso Adonis',
+  revisao: 'Bloco de Revisão — Erro Penal'
+};
+
+// ============ ESTADO ============
+let state = {
+  answers: {},        // { qid: { selected: true/false, correct: bool, guess: null|'sabia'|'chute' } }
+  currentIndex: 0,    // índice dentro da lista filtrada
+  filter: 'all'
+};
+
+let filteredQuestions = [];
+
+// ============ PERSISTÊNCIA ============
+async function saveState(){
+  try{
+    const payload = JSON.stringify(state);
+    if(window.storage){
+      await window.storage.set('quiz_erro_penal_progress', payload, false);
+    } else {
+      localStorage.setItem('quiz_erro_penal_progress', payload);
+    }
+  }catch(e){
+    try{ localStorage.setItem('quiz_erro_penal_progress', JSON.stringify(state)); }catch(e2){ console.error('Falha ao salvar progresso', e2); }
+  }
+}
+
+async function loadState(){
+  try{
+    if(window.storage){
+      const r = await window.storage.get('quiz_erro_penal_progress', false);
+      if(r && r.value) return JSON.parse(r.value);
+      return null;
+    } else {
+      const v = localStorage.getItem('quiz_erro_penal_progress');
+      return v ? JSON.parse(v) : null;
+    }
+  }catch(e){
+    try{
+      const v = localStorage.getItem('quiz_erro_penal_progress');
+      return v ? JSON.parse(v) : null;
+    }catch(e2){ return null; }
+  }
+}
+
+// ============ RENDER ============
+function applyFilter(){
+  filteredQuestions = state.filter === 'all' ? QUESTIONS : QUESTIONS.filter(q => q.cat === state.filter);
+  if(state.currentIndex >= filteredQuestions.length) state.currentIndex = 0;
+}
+
+function computeScore(){
+  let acertos=0, erros=0, respondidas=0;
+  Object.values(state.answers).forEach(a=>{
+    respondidas++;
+    if(a.correct) acertos++; else erros++;
+  });
+  const pct = respondidas>0 ? Math.round((acertos/respondidas)*100) : 0;
+  return {acertos, erros, respondidas, pct};
+}
+
+function renderScore(){
+  const s = computeScore();
+  document.getElementById('scAcertos').textContent = s.acertos;
+  document.getElementById('scErros').textContent = s.erros;
+  document.getElementById('scPct').textContent = s.pct + '%';
+  document.getElementById('scResp').textContent = s.respondidas + '/' + QUESTIONS.length;
+}
+
+function renderProgressBar(){
+  const total = filteredQuestions.length || 1;
+  const pos = state.currentIndex + 1;
+  document.getElementById('progressFill').style.width = ((pos/total)*100) + '%';
+}
+
+function renderQuestion(){
+  if(filteredQuestions.length === 0){
+    document.getElementById('qStatement').textContent = 'Nenhuma questão nesse filtro.';
+    return;
+  }
+  const q = filteredQuestions[state.currentIndex];
+  document.getElementById('qNum').textContent = `Q. ${state.currentIndex+1} / ${filteredQuestions.length}`;
+  document.getElementById('qCat').textContent = q.cat === 'adonis' ? 'CASO ADONIS' : 'BLOCO DE REVISÃO';
+  document.getElementById('qStatement').textContent = q.text;
+
+  const existing = state.answers[q.id];
+  const btnV = document.getElementById('btnV');
+  const btnF = document.getElementById('btnF');
+  btnV.className = 'vf-btn'; btnF.className = 'vf-btn';
+  btnV.disabled = false; btnF.disabled = false;
+
+  const revealBox = document.getElementById('revealBox');
+  revealBox.innerHTML = '';
+
+  if(existing){
+    btnV.disabled = true; btnF.disabled = true;
+    if(existing.selected === true) btnV.classList.add('chosen-v'); else btnV.classList.add('dim');
+    if(existing.selected === false) btnF.classList.add('chosen-f'); else btnF.classList.add('dim');
+    renderReveal(q, existing);
+  }
+
+  renderProgressBar();
+  renderScore();
+}
+
+function renderReveal(q, existing){
+  const revealBox = document.getElementById('revealBox');
+  const verdictClass = existing.correct ? 'ok' : 'no';
+  const verdictText = existing.correct ? '✅ VOCÊ ACERTOU' : '❌ VOCÊ ERROU';
+  const truthText = q.answer ? 'A afirmação é VERDADEIRA.' : 'A afirmação é FALSA.';
+
+  let guessHtml = '';
+  if(existing.correct){
+    guessHtml = `
+      <div class="guess-row">
+        <p>Como você chegou nessa resposta?</p>
+        <div class="guess-btns">
+          <button class="guess-btn ${existing.guess==='sabia'?'marked':''}" data-guess="sabia">Eu sabia</button>
+          <button class="guess-btn ${existing.guess==='chute'?'marked':''}" data-guess="chute">Acertei no chute</button>
+        </div>
+      </div>`;
+  }
+
+  revealBox.innerHTML = `
+    <div class="reveal ${verdictClass}">
+      <div class="verdict">${verdictText}</div>
+      <div class="truth">${truthText}</div>
+      <div class="just">${q.just}</div>
+      ${guessHtml}
+    </div>
+  `;
+
+  if(existing.correct){
+    revealBox.querySelectorAll('.guess-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const g = btn.getAttribute('data-guess');
+        state.answers[q.id].guess = g;
+        await saveState();
+        renderQuestion();
+      });
+    });
+  }
+}
+
+async function answerQuestion(selected){
+  const q = filteredQuestions[state.currentIndex];
+  if(state.answers[q.id]) return; // já respondida
+  const correct = (selected === q.answer);
+  state.answers[q.id] = { selected, correct, guess: null };
+  await saveState();
+  renderQuestion();
+}
+
+function renderCategorySelect(){
+  const sel = document.getElementById('categorySelect');
+  sel.innerHTML = '';
+  Object.keys(CATS).forEach(key=>{
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = CATS[key];
+    if(key === state.filter) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2200);
+}
+
+function renderSummary(){
+  const panel = document.getElementById('summaryPanel');
+  const listErros = document.getElementById('listErros');
+  const listChutes = document.getElementById('listChutes');
+  listErros.innerHTML = '';
+  listChutes.innerHTML = '';
+
+  let hasErro = false, hasChute = false;
+
+  QUESTIONS.forEach(q=>{
+    const a = state.answers[q.id];
+    if(!a) return;
+    if(!a.correct){
+      hasErro = true;
+      const li = document.createElement('li');
+      li.className = 'erro';
+      li.textContent = `Q${q.id} · ${CATS[q.cat]}: ${q.text.slice(0,90)}${q.text.length>90?'…':''}`;
+      li.addEventListener('click', ()=> jumpToQuestion(q.id));
+      listErros.appendChild(li);
+    }
+    if(a.correct && a.guess === 'chute'){
+      hasChute = true;
+      const li = document.createElement('li');
+      li.className = 'chute';
+      li.textContent = `Q${q.id} · ${CATS[q.cat]}: ${q.text.slice(0,90)}${q.text.length>90?'…':''}`;
+      li.addEventListener('click', ()=> jumpToQuestion(q.id));
+      listChutes.appendChild(li);
+    }
+  });
+
+  if(!hasErro) listErros.innerHTML = '<p class="empty-note">Nenhum erro registrado ainda. Continue assim!</p>';
+  if(!hasChute) listChutes.innerHTML = '<p class="empty-note">Nenhum acerto por chute registrado.</p>';
+
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function jumpToQuestion(qid){
+  state.filter = 'all';
+  applyFilter();
+  const idx = filteredQuestions.findIndex(q=>q.id===qid);
+  if(idx>=0){
+    state.currentIndex = idx;
+    renderCategorySelect();
+    renderQuestion();
+    document.getElementById('summaryPanel').style.display = 'none';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+}
+
+// ============ NAVEGAÇÃO ============
+document.getElementById('btnV').addEventListener('click', ()=> answerQuestion(true));
+document.getElementById('btnF').addEventListener('click', ()=> answerQuestion(false));
+
+document.getElementById('btnPrev').addEventListener('click', async ()=>{
+  if(state.currentIndex > 0){
+    state.currentIndex--;
+    await saveState();
+    renderQuestion();
+  }
+});
+document.getElementById('btnNext').addEventListener('click', async ()=>{
+  if(state.currentIndex < filteredQuestions.length - 1){
+    state.currentIndex++;
+    await saveState();
+    renderQuestion();
+  }
+});
+
+document.getElementById('categorySelect').addEventListener('change', async (e)=>{
+  state.filter = e.target.value;
+  state.currentIndex = 0;
+  applyFilter();
+  await saveState();
+  renderQuestion();
+});
+
+document.getElementById('btnResumo').addEventListener('click', renderSummary);
+
+document.getElementById('btnReset').addEventListener('click', async ()=>{
+  if(confirm('Isso vai apagar todo o seu progresso (acertos, erros e marcações de chute). Confirmar?')){
+    state = { answers:{}, currentIndex:0, filter:'all' };
+    applyFilter();
+    await saveState();
+    renderCategorySelect();
+    renderQuestion();
+    document.getElementById('summaryPanel').style.display = 'none';
+    showToast('Progresso reiniciado.');
+  }
+});
+
+document.getElementById('btnDownload').addEventListener('click', ()=>{
+  const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'quiz_erro_penal.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Cópia HTML baixada.');
+});
+
+// ============ INIT ============
+(async function init(){
+  const loaded = await loadState();
+  if(loaded && loaded.answers) state = loaded;
+  applyFilter();
+  renderCategorySelect();
+  renderQuestion();
+})();
+</script>
+</body>
+</html>

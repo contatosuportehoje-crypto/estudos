@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz V/F — Direito Penal — Parte 1</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f0; color: #1a1a1a; min-height: 100vh; }
+
+  .header { background: #1a1a2e; color: #fff; text-align: center; padding: 2rem 1rem 1.5rem; border-bottom: 4px solid #e8c440; }
+  .header .subtitle { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #a0a8c0; margin-bottom: 10px; }
+  .header h1 { font-size: clamp(22px, 4vw, 36px); font-weight: 800; letter-spacing: 1px; color: #fff; line-height: 1.2; }
+  .header h1 span { color: #e8c440; }
+
+  .container { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .stat-card { background: #fff; border-radius: 10px; padding: 12px 8px; text-align: center; border: 1px solid #e0e0d8; }
+  .stat-label { font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .stat-val { font-size: 22px; font-weight: 700; }
+  .stat-val.blue  { color: #1a6bc7; }
+  .stat-val.green { color: #1a8c4e; }
+  .stat-val.red   { color: #c0392b; }
+
+  .progress-wrap { background: #ddd; border-radius: 99px; height: 7px; margin-bottom: 1.5rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #1a6bc7, #38b2f0); border-radius: 99px; transition: width 0.4s ease; }
+
+  .q-card { background: #fff; border-radius: 14px; border: 1px solid #e0e0d8; padding: 1.5rem; margin-bottom: 1rem; }
+  .q-meta { font-size: 12px; color: #999; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .q-text { font-size: 16px; line-height: 1.65; color: #1a1a1a; margin-bottom: 1.25rem; font-weight: 400; }
+
+  .btn-row { display: flex; gap: 10px; }
+  .btn-vf { flex: 1; padding: 11px 8px; border-radius: 9px; border: 1.5px solid #d0d0c8; background: #fafaf8; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; color: #333; }
+  .btn-vf:hover:not(:disabled) { background: #f0f0e8; border-color: #b0b0a8; }
+  .btn-vf:disabled { cursor: default; }
+  .btn-vf.correct { background: #e6f7ee; border-color: #27ae60; color: #1a7a40; }
+  .btn-vf.wrong   { background: #fdecea; border-color: #e74c3c; color: #a93226; }
+  .btn-vf.missed  { background: #f8f8f4; border-color: #ddd; color: #aaa; }
+
+  .feedback-box { display: none; margin-top: 14px; padding: 12px 14px; border-radius: 9px; font-size: 13.5px; line-height: 1.6; }
+  .feedback-box.show { display: block; }
+  .feedback-box.correct { background: #e6f7ee; border: 1px solid #a9dfbf; color: #1a5c35; }
+  .feedback-box.wrong   { background: #fdecea; border: 1px solid #f5b7b1; color: #7b241c; }
+  .feedback-box strong  { display: block; font-size: 14px; margin-bottom: 4px; }
+
+  .nav-row { display: flex; gap: 10px; align-items: center; margin-top: 1rem; }
+  .btn-nav { padding: 9px 20px; border-radius: 9px; border: 1.5px solid #d0d0c8; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; color: #333; transition: background 0.15s; }
+  .btn-nav:hover:not(:disabled) { background: #f0f0e8; }
+  .btn-nav:disabled { opacity: 0.35; cursor: default; }
+  .q-counter { flex: 1; text-align: center; font-size: 13px; color: #888; font-weight: 500; }
+
+  .save-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+  .btn-reset { padding: 7px 14px; border-radius: 8px; border: 1.5px solid #e0a0a0; background: #fff; font-size: 12px; font-weight: 600; cursor: pointer; color: #a93226; }
+  .btn-reset:hover { background: #fdecea; }
+  .save-indicator { font-size: 11.5px; color: #999; }
+
+  @media (max-width: 480px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .header h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="subtitle">Concurso Público · Direito Penal</div>
+  <h1>BLOCO 1 — DIREITO PENAL<br><span>PARTE 1</span></h1>
+</div>
+
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Respondidas</div><div class="stat-val blue"  id="s-resp">0</div></div>
+    <div class="stat-card"><div class="stat-label">Acertos</div>    <div class="stat-val green" id="s-ok">0</div></div>
+    <div class="stat-card"><div class="stat-label">Erros</div>      <div class="stat-val red"   id="s-err">0</div></div>
+    <div class="stat-card"><div class="stat-label">Aproveitamento</div><div class="stat-val" id="s-pct" style="color:#333">—</div></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+  <div id="q-area"></div>
+  <div class="nav-row">
+    <button class="btn-nav" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <span class="q-counter" id="q-counter"></span>
+    <button class="btn-nav" id="btn-next" onclick="navigate(1)">Próxima →</button>
+  </div>
+  <div class="save-row">
+    <button class="btn-reset" onclick="resetProgress()">🔄 Reiniciar progresso</button>
+    <span class="save-indicator" id="save-indicator">Carregando progresso salvo…</span>
+  </div>
+</div>
+
+<script>
+const Q = [
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Crime próprio admite coautoria com pessoa sem a característica especial exigida pelo tipo, desde que o comparsa tenha ciência da condição especial.",ans:true,just:"Correto. A elementar se comunica aos coautores que possuem ciência da condição especial do comparsa."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Crimes de mão própria admitem coautoria, desde que ao menos um dos agentes realize diretamente a conduta típica.",ans:false,just:"Falso. Crimes de mão própria são personalíssimos e não admitem coautoria, pois exigem execução direta pelo próprio sujeito."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Crimes de mão própria admitem participação na modalidade de instigação ou auxílio.",ans:true,just:"Correto. Embora não admitam coautoria, os crimes de mão própria admitem participação (instigação ou auxílio)."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Coautoria Sucessiva ocorre quando um agente adere à conduta criminosa já em curso, antes da consumação, mesmo sem ajuste prévio.",ans:true,just:"Correto. Essa é a definição exata de coautoria sucessiva."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"O executor de reserva que apenas fica à disposição sem intervir na execução é classificado como coautor.",ans:false,just:"Falso. O executor de reserva que apenas permanece à disposição (apoio moral ou espera) é classificado como partícipe, não coautor."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"O executor de reserva que efetivamente intervém na execução do crime é classificado como partícipe.",ans:false,just:"Falso. Quando intervém efetivamente na execução, o executor de reserva passa a ser classificado como coautor."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Admite-se coautoria em crimes culposos quanto à conduta imprudente, mesmo sendo o resultado involuntário.",ans:true,just:"Correto. Admite-se coautoria em crimes culposos quanto à conduta (ajuste de ação imprudente), embora o resultado seja involuntário."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Há consenso doutrinário de que coautoria em crimes omissivos próprios é possível.",ans:false,just:"Falso. Não há consenso: Mirabete nega a possibilidade; Bitencourt admite."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"É possível concurso de pessoas em crime omissivo impróprio quando vários garantes, com dever de agir, deixam de atuar de comum acordo.",ans:true,just:"Correto. Havendo vários garantes que se omitem em conjunto, admite-se o concurso de pessoas."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Na autoria colateral, há ajuste prévio entre os agentes que executam a mesma conduta contra a mesma vítima.",ans:false,just:"Falso. Na autoria colateral, os agentes atuam sem ajuste prévio e sem liame subjetivo entre si."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Na autoria colateral com autoria incerta, ambos os agentes respondem por tentativa, em respeito ao in dubio pro reo.",ans:true,just:"Correto. Diante da incerteza sobre quem causou o resultado, ambos respondem por tentativa."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Na autoria mediata em crimes próprios, quem deve ter a condição pessoal exigida pelo tipo é o instrumento, não o homem de trás.",ans:false,just:"Falso. É o homem de trás (autor mediato) que deve ter a condição especial exigida pelo tipo. O instrumento não precisa dela."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"A autoria mediata é admitida em crimes de mão própria e em crimes culposos.",ans:false,just:"Falso. A autoria mediata não é admitida em crimes culposos (resultado involuntário) nem em crimes de mão própria (exigem execução pessoal)."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Segundo Roxin, o domínio funcional do fato fundamenta a coautoria, sendo o critério a divisão de tarefas essenciais no plano comum.",ans:true,just:"Correto. O domínio funcional (divisão de tarefas essenciais) é a base da coautoria segundo a teoria do domínio do fato de Roxin."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"No Aparelho Organizado de Poder, a fungibilidade dos executores garante o resultado independentemente de quem execute.",ans:true,just:"Correto. A fungibilidade (substituibilidade) dos executores é característica essencial do aparelho organizado de poder."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Pela Teoria Objetivo-Formal, autor é quem controla o 'se', o 'como' e o 'quando' da execução do crime.",ans:false,just:"Falso. Esse é o critério da teoria do Domínio do Fato (Roxin). Pela Teoria Objetivo-Formal, autor é quem realiza a conduta descrita no verbo núcleo do tipo."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"A teoria adotada como regra no Brasil para definir autoria é a Teoria Objetivo-Formal.",ans:true,just:"Correto. O Brasil adota como regra a Teoria Objetivo-Formal: autor é quem realiza a conduta descrita no verbo núcleo do tipo."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"Pela Teoria Objetivo-Material, o partícipe é aquele cuja contribuição é menos relevante objetivamente para o resultado.",ans:true,just:"Correto. Essa é a definição do partícipe segundo a Teoria Objetivo-Material."},
+  {b:"Bloco 1 — Autoria e Coautoria",t:"A Multidão Delinquente funciona como circunstância agravante para o agente que provocou o tumulto.",ans:false,just:"Falso. Quando o agente NÃO provocou o tumulto, a influência da multidão funciona como atenuante. Se o agente provocou, não se beneficia."},
+  {b:"Bloco 2 — Participação",t:"O induzimento cria ideia criminosa nova na mente do autor, enquanto a instigação reforça ideia que ele já possuía.",ans:true,just:"Correto. Essa é a distinção clássica entre induzimento e instigação."},
+  {b:"Bloco 2 — Participação",t:"As duas formas de participação em sentido estrito são a moral (induzimento ou instigação) e a material (auxílio).",ans:true,just:"Correto. Participação moral = induzimento ou instigação; participação material = auxílio físico, preparo ou facilitação."},
+  {b:"Bloco 2 — Participação",t:"Participação em Cadeia ocorre quando o mesmo autor é auxiliado por duas ou mais pessoas independentes.",ans:false,just:"Falso. Isso é Participação Sucessiva. Participação em Cadeia é quando alguém induz ou instiga outrem a induzir ou instigar um terceiro ('participação da participação')."},
+  {b:"Bloco 2 — Participação",t:"Na Participação Sucessiva, o mesmo autor é induzido ou auxiliado por duas ou mais pessoas que agem de forma independente, sem vínculo subjetivo entre si.",ans:true,just:"Correto. Essa é a definição exata de participação sucessiva."},
+  {b:"Bloco 2 — Participação",t:"O auxílio material prestado após a consumação do crime sempre configura participação, independentemente de ajuste prévio.",ans:false,just:"Falso. Para ser participação, é indispensável o ajuste prévio. Sem combinação anterior, o auxílio após o crime configura crime autônomo (ex: favorecimento real)."},
+  {b:"Bloco 2 — Participação",t:"A omissão pode ser considerada participação punível quando houver dever jurídico de agir (posição de garante).",ans:true,just:"Correto. Sem o dever jurídico de agir, a omissão é 'participação negativa' impunível. Com o dever, torna-se participação punível."},
+  {b:"Bloco 2 — Participação",t:"O ajuste, determinação ou auxílio são puníveis mesmo que o crime não chegue a ser tentado, como regra geral.",ans:false,just:"Falso. Em regra, não são puníveis se o crime não chegar a ser tentado. A punição depende de disposição expressa em lei."},
+  {b:"Bloco 2 — Participação",t:"A redução de pena pela participação de menor importância (1/6 a 1/3) pode beneficiar autores e coautores.",ans:false,just:"Falso. A redução beneficia apenas os partícipes (conduta acessória). Autores e coautores não recebem esse benefício."},
+  {b:"Bloco 2 — Participação",t:"Na Participação Dolosamente Distinta, se o resultado mais grave era previsível para o agente que queria o crime menor, sua pena é aumentada até a metade.",ans:true,just:"Correto. É a regra do Art. 29, §2º do CP: aplica-se a pena do crime menos grave, aumentada até metade se o resultado mais grave era previsível."},
+  {b:"Bloco 2 — Participação",t:"Pela teoria monista, todos respondem concretamente pelo mesmo crime com a mesma pena, sem individualização.",ans:false,just:"Falso. Abstratamente todos respondem pelo mesmo crime, mas a pena varia concretamente conforme a culpabilidade de cada um (individualização da pena)."},
+  {b:"Bloco 3 — Acessoriedade",t:"A Teoria da Acessoriedade Limitada, adotada no Brasil, exige que o fato principal seja típico, ilícito e que o autor seja culpável.",ans:false,just:"Falso. A Acessoriedade Limitada exige apenas que o fato seja típico e ilícito. Não exige culpabilidade do autor — por isso o partícipe é punido mesmo que o autor seja inimputável."},
+  {b:"Bloco 3 — Acessoriedade",t:"A Teoria da Acessoriedade Mínima exige apenas que o autor principal tenha praticado fato típico.",ans:true,just:"Correto. A Acessoriedade Mínima exige somente a tipicidade do fato principal."},
+  {b:"Bloco 3 — Acessoriedade",t:"A teoria mais restritiva da acessoriedade é a Hiperacessoriedade, pois exige tipicidade, ilicitude, culpabilidade e punibilidade efetiva.",ans:true,just:"Correto. A Hiperacessoriedade é a mais exigente, pois além de tipicidade, ilicitude e culpabilidade, exige que o fato seja efetivamente punível."},
+  {b:"Bloco 3 — Acessoriedade",t:"No crime de lavagem de dinheiro, adota-se a Acessoriedade Máxima, exigindo condenação prévia do autor do crime antecedente.",ans:false,just:"Falso. Adota-se a Acessoriedade Limitada. Basta que o crime antecedente seja típico e ilícito, sem necessidade de condenação anterior."},
+  {b:"Bloco 4 — Comunicabilidade",t:"Circunstâncias de caráter subjetivo (pessoais), como a reincidência, não se comunicam aos demais agentes no concurso de pessoas.",ans:true,just:"Correto. Motivações pessoais ou reincidência de um autor não afetam a pena do outro."},
+  {b:"Bloco 4 — Comunicabilidade",t:"Circunstâncias objetivas (meios e modos de execução) se comunicam aos coautores independentemente do conhecimento deles.",ans:false,just:"Falso. As circunstâncias objetivas se comunicam, mas desde que os coautores tenham ciência da sua existência — para evitar responsabilidade objetiva."},
+  {b:"Bloco 4 — Comunicabilidade",t:"Uma condição pessoal (subjetiva) somente se comunica aos demais agentes quando for elementar do crime e o comparsa tiver conhecimento dela.",ans:true,just:"Correto. Essa é a regra do Art. 30 do CP: as circunstâncias pessoais não se comunicam, salvo quando forem elementares do crime e o comparsa tiver ciência."},
+  {b:"Bloco 4 — Comunicabilidade",t:"Motivos fúteis se comunicam entre coautores por serem circunstâncias objetivas do crime.",ans:false,just:"Falso. Motivos são circunstâncias subjetivas (pessoais) e não elementares. O Art. 30 do CP impede a comunicação de circunstâncias pessoais."},
+  {b:"Bloco 4 — Comunicabilidade",t:"O particular que auxilia funcionário público a subtrair bens da administração responde por peculato, pois a qualidade de funcionário público é elementar comunicável.",ans:true,just:"Correto. Como a qualidade de funcionário público é elementar do peculato e o particular tem ciência dela, ela se comunica, fazendo o particular responder por peculato."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"A finalidade principal de resolver o conflito aparente de normas é evitar o bis in idem e manter a unidade lógica do sistema jurídico.",ans:true,just:"Correto. Evitar a dupla punição pelo mesmo fato e preservar a coerência do sistema são os objetivos centrais."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"Para o conflito aparente de normas existir, é necessário pluralidade de normas, unidade de fato e vigência simultânea das normas.",ans:true,just:"Correto. Esses são os três requisitos cumulativos (mnemônico PUV): Pluralidade de normas, Unidade de fato e Vigência simultânea."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"No conflito aparente de normas, assim como no concurso de crimes, há dois ou mais fatos e aplica-se mais de uma pena.",ans:false,just:"Falso. No conflito aparente há apenas um fato e aplica-se uma pena. No concurso de crimes há dois ou mais fatos, gerando várias penas."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"O conflito aparente de normas e o conflito de leis penais no tempo são a mesma coisa.",ans:false,just:"Falso. O conflito aparente ocorre entre normas vigentes ao mesmo tempo. O conflito no tempo ocorre quando uma lei nova substitui a antiga (sucessão de leis)."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"O Princípio da Especialidade determina que a norma especial afasta a aplicação da norma geral, com análise feita no plano abstrato.",ans:true,just:"Correto. A norma especial (com todos os elementos da geral + elementos especializantes) afasta a norma geral. A análise é abstrata."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"A norma subsidiária é chamada de 'soldado de reserva' porque só incide se o fato não constituir crime mais grave.",ans:true,just:"Correto. A norma subsidiária só entra em campo se a norma principal (mais grave) não puder ser aplicada ao caso concreto."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"Pelo Princípio da Consunção, o crime-meio absorve o crime-fim quando aquele é fase normal de preparação deste.",ans:false,just:"Falso. É o oposto: o crime-fim (mais amplo) absorve o crime-meio (menos amplo), quando este funciona como fase normal de preparação ou execução daquele."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"O Crime Progressivo ocorre quando o agente quer inicialmente resultado menor e, após realizá-lo, decide prosseguir para resultado mais grave.",ans:false,just:"Falso. Isso é Progressão Criminosa (mudança de dolo). No Crime Progressivo, o agente quer desde o início o resultado maior, mas obrigatoriamente passa por um crime menor."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"O pós-fato impunível é a conduta típica posterior que configura mero exaurimento do crime anterior, não punida autonomamente para evitar bis in idem.",ans:true,just:"Correto. Ex: vender o objeto furtado é pós-fato impunível, pois é mero exaurimento do furto."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"Segundo o STJ (Súmula 17), a consunção só ocorre quando o crime-fim tem pena maior que o crime-meio.",ans:false,just:"Falso. O STJ admite a consunção mesmo quando o crime-fim tem pena menor (ex: falsidade documental exaurida no estelionato)."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"O Princípio da Alternatividade se aplica a tipos penais de ação múltipla, sendo exclusivo para crimes previstos no mesmo tipo penal.",ans:true,just:"Correto. A alternatividade se aplica dentro do mesmo tipo misto alternativo, não entre artigos diferentes."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"Se um agente falsifica documento apenas para facilitar furto qualificado, responde pelos dois crimes em concurso.",ans:false,just:"Falso. Pelo Princípio da Consunção (Súmula 17 STJ), o crime de falso é absorvido pelo crime patrimonial quando nele se exaure, sem potencialidade lesiva autônoma."},
+  {b:"Bloco 5 — Conflito Aparente de Normas",t:"No furto com arrombamento, o arrombamento é crime autônomo e não é absorvido pelo furto qualificado.",ans:false,just:"Falso. Pelo princípio da consunção, o furto qualificado absorve o arrombamento como fase normal de execução."},
+  {b:"Bloco 6 — Norma Penal em Branco",t:"Na Norma Penal em Branco Homogênea, o complemento emana de instância ou fonte distinta da legislativa, como portaria administrativa.",ans:false,just:"Falso. Isso é a Norma Heterogênea (Heteróloga). Na Homogênea, o complemento emana da mesma instância legislativa (lei completa lei)."},
+  {b:"Bloco 6 — Norma Penal em Branco",t:"A Norma Penal em Branco 'ao Quadrado' ocorre quando o complemento da norma penal também necessita de outro complemento.",ans:true,just:"Correto. Ex: Art. 38 da Lei 9.605/98 depende do Código Florestal, que depende de declaração do Chefe do Executivo."},
+  {b:"Bloco 6 — Norma Penal em Branco",t:"Na Norma Penal em Branco 'ao Avesso' (ou Inversa), o preceito primário é incompleto e necessita de complemento.",ans:false,just:"Falso. Na norma ao avesso, o preceito primário é completo. É a sanção (preceito secundário) que necessita de complemento em outra norma."},
+  {b:"Bloco 6 — Norma Penal em Branco",t:"O Art. 13 do CP (Nexo Causal) é uma norma não incriminadora explicativa, pois define regras de imputação sem criar crime ou pena.",ans:true,just:"Correto. O Art. 13 é norma não incriminadora explicativa (ou complementar), que define regras de imputação sem criar crime ou pena."},
+  {b:"Bloco 6 — Norma Penal em Branco",t:"As normas penais não incriminadoras se subdividem apenas em explicativas e permissivas.",ans:false,just:"Falso. Subdividem-se em três tipos: explicativas (integrativas), permissivas (justificantes/exculpantes) e complementares (de extensão)."},
+  {b:"Bloco 6 — Norma Penal em Branco",t:"O Art. 28, I do CP exclui a imputabilidade penal nos casos de emoção e paixão.",ans:false,just:"Falso. O Art. 28, I é norma explicativa que esclarece que emoção e paixão NÃO afastam a responsabilidade penal."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"O Princípio da Alteridade impede a punição de condutas que atinjam apenas a esfera do próprio autor, como a autolesão.",ans:true,just:"Correto. O Direito Penal só pode punir condutas que transcendam a esfera do autor e atinjam bens jurídicos de terceiros."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"O Princípio da Materialização do Fato permite a punição de pensamentos e cogitações quando revelarem periculosidade do agente.",ans:false,just:"Falso. O Princípio da Materialização do Fato impede a punição de pensamentos, desejos, cogitações ou estilo de vida. O Direito Penal pune fatos e condutas."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"O Princípio da Ofensividade exige que a conduta cause lesão efetiva ou perigo concreto de lesão ao bem jurídico para haver crime.",ans:true,just:"Correto. A ofensividade veda a punição de pecados ou imoralidades sem dano a terceiros, exigindo lesão ou perigo concreto."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"A Fragmentariedade atua no plano concreto, intervindo quando os outros ramos do Direito falharem.",ans:false,just:"Falso. A Fragmentariedade atua no plano abstrato (legislativo). Quem atua no plano concreto é a Subsidiariedade (ultima ratio)."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"A 'Fragmentariedade às Avessas' ocorre quando a proteção penal se retira de uma conduta que não demanda mais intervenção penal.",ans:true,just:"Correto. Ex: descriminalização do adultério — a proteção penal se retira de conduta que deixou de demandar intervenção penal."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"O Princípio da Humanidade permite pena de morte em caso de guerra declarada.",ans:true,just:"Correto. O Princípio da Humanidade veda penas de morte, perpétuas, de banimento e cruéis, com a única exceção prevista constitucionalmente: guerra declarada."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"O Princípio da Intransmissibilidade da Pena impede que a obrigação de reparar o dano seja estendida aos herdeiros em qualquer hipótese.",ans:false,just:"Falso. A pena criminal não passa da pessoa do condenado, mas a obrigação de reparar o dano pode ser estendida aos herdeiros até o limite da herança."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"Pelo Princípio da Adequação Social (Welzel), condutas amplamente aceitas pela sociedade excluem a tipicidade material.",ans:true,just:"Correto. Condutas toleradas socialmente não devem ser consideradas crimes, pois o princípio exclui a tipicidade material."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"Medidas Provisórias podem criar tipos penais incriminadores ou aumentar penas, desde que convertidas em lei em 60 dias.",ans:false,just:"Falso. O Art. 62, §1º, I, 'b' da CF veda expressamente a edição de MP sobre matéria penal incriminadora, sem exceção."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"MP pode tratar de matéria penal benéfica ao réu, pois a vedação constitucional é restrita à matéria penal prejudicial.",ans:true,just:"Correto. A vedação constitucional se limita à matéria penal prejudicial (incriminadora). Benefícios ao réu podem ser veiculados por MP."},
+  {b:"Bloco 7 — Princípios do Direito Penal",t:"A aplicação da reincidência como agravante configura bis in idem, segundo o STF.",ans:false,just:"Falso. O STF (RE 453.000) decidiu que é constitucional, representando maior juízo de reprovabilidade sobre quem volta a delinquir, não configurando bis in idem."},
+  {b:"Bloco 8 — Insignificância",t:"O Princípio da Insignificância exclui a tipicidade material, mantendo intacta a tipicidade formal.",ans:true,just:"Correto. A lesão ao bem jurídico é ínfima, excluindo a tipicidade material. A conduta continua formalmente típica."},
+  {b:"Bloco 8 — Insignificância",t:"Os requisitos do STF para a insignificância são: mínima ofensividade, ausência de periculosidade social, reduzido grau de reprovabilidade e inexpressividade da lesão (MARI).",ans:true,just:"Correto. Esses são os quatro vetores MARI exigidos pelo STF para a aplicação do princípio da insignificância."},
+  {b:"Bloco 8 — Insignificância",t:"A reincidência, por si só, impede a aplicação do princípio da insignificância.",ans:false,just:"Falso. A reincidência isolada não impede. A multirreincidência específica pode impedir conforme o caso concreto."},
+  {b:"Bloco 8 — Insignificância",t:"O prazo depurador de 5 anos (Art. 64, I do CP) afasta a contumácia para fins de análise de insignificância, segundo o STJ.",ans:false,just:"Falso. O STJ afastou expressamente a aplicação desse prazo para fins de análise de contumácia na insignificância."},
+  {b:"Bloco 8 — Insignificância",t:"Segundo o Tema 1218 do STJ, inquéritos policiais em curso podem demonstrar habitualidade criminosa e afastar a insignificância.",ans:true,just:"Correto. Procedimentos administrativos e inquéritos servem para demonstrar habitualidade criminosa e afastar a insignificância, conforme o Tema 1218 do STJ."},
+  {b:"Bloco 8 — Insignificância",t:"A Bagatela Imprópria ocorre quando o fato nasce irrelevante para o Direito Penal, excluindo a tipicidade material desde a origem.",ans:false,just:"Falso. Isso é a Bagatela Própria. A Bagatela Imprópria é quando o fato é relevante (típico e ilícito), mas a punição torna-se desnecessária no caso concreto."},
+  {b:"Bloco 8 — Insignificância",t:"O valor limite para insignificância no crime de descaminho, segundo o Tema 1218 do STJ, é de R$ 20.000,00.",ans:true,just:"Correto. O STJ fixou o limite de R$ 20.000,00 para o descaminho, desde que não haja contumácia do agente."},
+  {b:"Bloco 8 — Insignificância",t:"O princípio da insignificância é aplicado a crimes contra a Administração Pública, conforme a Súmula 599 do STJ.",ans:false,just:"Falso. A Súmula 599 do STJ afasta a aplicação do princípio da insignificância a crimes contra a Administração Pública, em razão da moralidade administrativa."},
+  {b:"Bloco 8 — Insignificância",t:"O princípio da insignificância não se aplica ao crime de moeda falsa, pois o bem jurídico protegido é a fé pública e a confiança no sistema monetário.",ans:true,just:"Correto. O bem jurídico é a fé pública, não apenas o valor monetário. Por isso a insignificância não se aplica."},
+  {b:"Bloco 8 — Insignificância",t:"O STJ admite excepcionalmente a insignificância no contrabando de pequena quantidade de medicamento para uso próprio.",ans:true,just:"Correto. Em regra o contrabando de cigarros não admite insignificância, mas o STJ admite excepcionalmente na importação de pequena quantidade de medicamento para uso próprio."},
+  {b:"Bloco 8 — Insignificância",t:"O limite de 1.000 maços de cigarros para insignificância no contrabando se aplica também a cigarros eletrônicos, por analogia.",ans:false,just:"Falso. O STJ (Tema 1143) afastou esse limite para cigarros eletrônicos, pois há proibição total de comercialização pela ANVISA."},
+  {b:"Bloco 8 — Insignificância",t:"A restituição imediata e integral do bem furtado é suficiente, por si só, para a aplicação do princípio da insignificância.",ans:false,just:"Falso. Conforme o Tema Repetitivo 1205 do STJ, é necessária análise cumulativa dos demais requisitos MARI, não bastando a restituição isoladamente."}
+];
+
+const STORAGE_KEY = "quiz_penal_bloco1_parte1_progress_v1";
+
+let current = 0;
+let answers = new Array(Q.length).fill(null);
+
+/* ---------- PERSISTÊNCIA (localStorage; usa window.storage se disponível) ---------- */
+async function storageGet(key){
+  if (window.storage){
+    try{
+      const r = await window.storage.get(key, false);
+      return r ? JSON.parse(r.value) : null;
+    }catch(e){ return null; }
+  }
+  try{
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : null;
+  }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  if (window.storage){
+    try{ await window.storage.set(key, JSON.stringify(value), false); return true; }
+    catch(e){ return false; }
+  }
+  try{ localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch(e){ return false; }
+}
+
+async function saveProgress(){
+  const ok = await storageSet(STORAGE_KEY, {current, answers});
+  const el = document.getElementById('save-indicator');
+  if (el){
+    el.textContent = ok
+      ? ('✓ Progresso salvo automaticamente — ' + new Date().toLocaleTimeString('pt-BR'))
+      : '⚠ Não foi possível salvar o progresso neste navegador.';
+  }
+}
+
+async function loadProgress(){
+  const saved = await storageGet(STORAGE_KEY);
+  if (saved && Array.isArray(saved.answers) && saved.answers.length === Q.length){
+    answers = saved.answers;
+    if (typeof saved.current === 'number' && saved.current >= 0 && saved.current < Q.length){
+      current = saved.current;
+    }
+  }
+}
+
+async function resetProgress(){
+  if (!confirm('Tem certeza que deseja reiniciar todo o progresso deste quiz? Essa ação não pode ser desfeita.')) return;
+  current = 0;
+  answers = new Array(Q.length).fill(null);
+  await saveProgress();
+  renderQuestion();
+}
+
+function updateStats(){
+  let resp = answers.filter(a => a !== null).length;
+  let ok   = answers.filter((a,i) => a !== null && a === Q[i].ans).length;
+  let err  = resp - ok;
+  document.getElementById('s-resp').textContent = resp;
+  document.getElementById('s-ok').textContent   = ok;
+  document.getElementById('s-err').textContent  = err;
+  let pct = resp > 0 ? Math.round(ok / resp * 100) : null;
+  let pEl = document.getElementById('s-pct');
+  pEl.textContent = pct !== null ? pct + '%' : '—';
+  pEl.style.color = pct === null ? '#333' : pct >= 70 ? '#1a8c4e' : '#c0392b';
+  document.getElementById('prog').style.width = (resp / Q.length * 100) + '%';
+}
+
+function renderQuestion(){
+  const q = Q[current];
+  const userAns = answers[current];
+  const answered = userAns !== null;
+
+  let vClass = '', fClass = '';
+  if(answered){
+    vClass = userAns === true  ? (q.ans === true  ? 'correct' : 'wrong') : 'missed';
+    fClass = userAns === false ? (q.ans === false ? 'correct' : 'wrong') : 'missed';
+  }
+
+  let feedbackClass = '', feedbackTitle = '', feedbackText = '';
+  if(answered){
+    const right = userAns === q.ans;
+    feedbackClass = right ? 'correct' : 'wrong';
+    feedbackTitle = right ? '✓ Correto!' : '✗ Errado!';
+    feedbackText  = q.just;
+  }
+
+  document.getElementById('q-area').innerHTML = `
+    <div class="q-card">
+      <div class="q-meta">${q.b} &nbsp;·&nbsp; Questão ${current + 1} de ${Q.length}</div>
+      <div class="q-text">${q.t}</div>
+      <div class="btn-row">
+        <button class="btn-vf ${vClass}" onclick="answer(true)"  ${answered ? 'disabled' : ''}>✓ &nbsp;Verdadeiro</button>
+        <button class="btn-vf ${fClass}" onclick="answer(false)" ${answered ? 'disabled' : ''}>✗ &nbsp;Falso</button>
+      </div>
+      <div class="feedback-box ${feedbackClass} ${answered ? 'show' : ''}">
+        <strong>${feedbackTitle}</strong>${feedbackText}
+      </div>
+    </div>`;
+
+  document.getElementById('q-counter').textContent = (current + 1) + ' / ' + Q.length;
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === Q.length - 1;
+  updateStats();
+}
+
+function answer(val){
+  if(answers[current] !== null) return;
+  answers[current] = val;
+  renderQuestion();
+  saveProgress();
+}
+
+function navigate(dir){
+  current = Math.max(0, Math.min(Q.length - 1, current + dir));
+  renderQuestion();
+  saveProgress();
+}
+
+(async function init(){
+  await loadProgress();
+  renderQuestion();
+})();
+</script>
+</body>
+</html>

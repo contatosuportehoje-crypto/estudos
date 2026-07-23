@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz V/F — Direito Penal — Parte 2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f0; color: #1a1a1a; min-height: 100vh; }
+
+  .header { background: #1a1a2e; color: #fff; text-align: center; padding: 2rem 1rem 1.5rem; border-bottom: 4px solid #e8c440; }
+  .header .subtitle { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #a0a8c0; margin-bottom: 10px; }
+  .header h1 { font-size: clamp(22px, 4vw, 36px); font-weight: 800; letter-spacing: 1px; color: #fff; line-height: 1.2; }
+  .header h1 span { color: #e8c440; }
+
+  .container { max-width: 780px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .stat-card { background: #fff; border-radius: 10px; padding: 12px 8px; text-align: center; border: 1px solid #e0e0d8; }
+  .stat-label { font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .stat-val { font-size: 22px; font-weight: 700; }
+  .stat-val.blue  { color: #1a6bc7; }
+  .stat-val.green { color: #1a8c4e; }
+  .stat-val.red   { color: #c0392b; }
+
+  .progress-wrap { background: #ddd; border-radius: 99px; height: 7px; margin-bottom: 1.5rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #1a6bc7, #38b2f0); border-radius: 99px; transition: width 0.4s ease; }
+
+  .q-card { background: #fff; border-radius: 14px; border: 1px solid #e0e0d8; padding: 1.5rem; margin-bottom: 1rem; }
+  .q-meta { font-size: 12px; color: #999; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .q-text { font-size: 16px; line-height: 1.65; color: #1a1a1a; margin-bottom: 1.25rem; font-weight: 400; }
+
+  .btn-row { display: flex; gap: 10px; }
+  .btn-vf { flex: 1; padding: 11px 8px; border-radius: 9px; border: 1.5px solid #d0d0c8; background: #fafaf8; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; color: #333; }
+  .btn-vf:hover:not(:disabled) { background: #f0f0e8; border-color: #b0b0a8; }
+  .btn-vf:disabled { cursor: default; }
+  .btn-vf.correct { background: #e6f7ee; border-color: #27ae60; color: #1a7a40; }
+  .btn-vf.wrong   { background: #fdecea; border-color: #e74c3c; color: #a93226; }
+  .btn-vf.missed  { background: #f8f8f4; border-color: #ddd; color: #aaa; }
+
+  .feedback-box { display: none; margin-top: 14px; padding: 12px 14px; border-radius: 9px; font-size: 13.5px; line-height: 1.6; }
+  .feedback-box.show { display: block; }
+  .feedback-box.correct { background: #e6f7ee; border: 1px solid #a9dfbf; color: #1a5c35; }
+  .feedback-box.wrong   { background: #fdecea; border: 1px solid #f5b7b1; color: #7b241c; }
+  .feedback-box strong  { display: block; font-size: 14px; margin-bottom: 4px; }
+
+  .nav-row { display: flex; gap: 10px; align-items: center; margin-top: 1rem; }
+  .btn-nav { padding: 9px 20px; border-radius: 9px; border: 1.5px solid #d0d0c8; background: #fff; font-size: 13px; font-weight: 600; cursor: pointer; color: #333; transition: background 0.15s; }
+  .btn-nav:hover:not(:disabled) { background: #f0f0e8; }
+  .btn-nav:disabled { opacity: 0.35; cursor: default; }
+  .q-counter { flex: 1; text-align: center; font-size: 13px; color: #888; font-weight: 500; }
+
+  .save-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+  .btn-reset { padding: 7px 14px; border-radius: 8px; border: 1.5px solid #e0a0a0; background: #fff; font-size: 12px; font-weight: 600; cursor: pointer; color: #a93226; }
+  .btn-reset:hover { background: #fdecea; }
+  .save-indicator { font-size: 11.5px; color: #999; }
+
+  @media (max-width: 480px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .header h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="subtitle">Concurso Público · Direito Penal</div>
+  <h1>BLOCO 1 — DIREITO PENAL<br><span>PARTE 2</span></h1>
+</div>
+
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Respondidas</div><div class="stat-val blue"  id="s-resp">0</div></div>
+    <div class="stat-card"><div class="stat-label">Acertos</div>    <div class="stat-val green" id="s-ok">0</div></div>
+    <div class="stat-card"><div class="stat-label">Erros</div>      <div class="stat-val red"   id="s-err">0</div></div>
+    <div class="stat-card"><div class="stat-label">Aproveitamento</div><div class="stat-val" id="s-pct" style="color:#333">—</div></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+  <div id="q-area"></div>
+  <div class="nav-row">
+    <button class="btn-nav" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <span class="q-counter" id="q-counter"></span>
+    <button class="btn-nav" id="btn-next" onclick="navigate(1)">Próxima →</button>
+  </div>
+  <div class="save-row">
+    <button class="btn-reset" onclick="resetProgress()">🔄 Reiniciar progresso</button>
+    <span class="save-indicator" id="save-indicator">Carregando progresso salvo…</span>
+  </div>
+</div>
+
+<script>
+const Q = [
+  // BLOCO 9 — TEORIA DO ERRO
+  {b:"Bloco 9 — Teoria do Erro",t:"No Erro de Tipo, o agente sabe o que faz, mas acredita que a conduta é permitida.",ans:false,just:"Falso. No Erro de Tipo, o agente NÃO sabe o que está fazendo — desconhece a realidade (os elementos do tipo penal). Quem sabe o que faz mas acha permitido comete Erro de Proibição."},
+  {b:"Bloco 9 — Teoria do Erro",t:"No Delito Putativo, o agente acredita que está cometendo um crime, mas o fato é atípico — o crime só existe na sua mente.",ans:true,just:"Correto. O Delito Putativo é exatamente isso: o fato é atípico para o Direito Penal, mas o agente imagina estar praticando um crime."},
+  {b:"Bloco 9 — Teoria do Erro",t:"No Erro de Proibição Direto, o agente erra sobre a existência ou os limites de uma causa de justificação.",ans:false,just:"Falso. Isso é o Erro de Proibição Indireto (Permissivo). O Direto é o erro sobre o conteúdo da norma — o agente acha que a conduta proibida é permitida."},
+  {b:"Bloco 9 — Teoria do Erro",t:"No Erro de Proibição Indireto, o agente sabe que a conduta é proibida, mas acredita que uma excludente de ilicitude o autoriza a agir.",ans:true,just:"Correto. No Erro de Proibição Indireto (ou Permissivo), o agente conhece a proibição, mas erra sobre a existência ou os limites de uma norma permissiva."},
+  {b:"Bloco 9 — Teoria do Erro",t:"Pela Teoria Extremada da Culpabilidade, o erro sobre os pressupostos fáticos de uma causa de justificação é tratado como Erro de Tipo Permissivo.",ans:false,just:"Falso. Isso é a Teoria Limitada da Culpabilidade (adotada no Brasil). Para a Teoria Extremada, todo erro sobre causa de justificação — seja sobre fatos ou sobre a norma — é sempre Erro de Proibição Indireto."},
+  {b:"Bloco 9 — Teoria do Erro",t:"A Teoria Limitada da Culpabilidade, adotada no Brasil, distingue o erro sobre situação de fato (Erro de Tipo Permissivo) do erro sobre a existência/limites da norma (Erro de Proibição).",ans:true,just:"Correto. Essa distinção é a marca da Teoria Limitada: erro fático = Erro de Tipo Permissivo; erro sobre a norma = Erro de Proibição."},
+  {b:"Bloco 9 — Teoria do Erro",t:"O Erro Mandamental recai sobre a norma proibitiva de crimes comissivos, sendo próprio dos delitos de ação.",ans:false,just:"Falso. O Erro Mandamental recai sobre a norma que OBRIGA o agente a atuar para evitar um resultado. É próprio dos crimes OMISSIVOS (o agente ignora o dever jurídico de agir)."},
+  {b:"Bloco 9 — Teoria do Erro",t:"O agente garantidor que deixa de agir por desconhecer sua qualidade de garantidor comete Erro de Tipo Essencial, excluindo o dolo.",ans:true,just:"Correto. Desconhecer o elemento fático/jurídico que gera o dever de agir configura Erro de Tipo Essencial (Art. 20 CP), excluindo o dolo."},
+  {b:"Bloco 9 — Teoria do Erro",t:"Na Aberratio Ictus com resultado único (unidade simples), o agente responde considerando as qualidades da vítima real atingida.",ans:false,just:"Falso. Na Aberratio Ictus com resultado único, o Direito Penal ignora a vítima real e pune o agente como se tivesse atingido a vítima PRETENDIDA (vítima virtual) — Art. 73 CP."},
+  {b:"Bloco 9 — Teoria do Erro",t:"Na Aberratio Ictus com resultado duplo (unidade complexa), aplica-se o concurso formal.",ans:true,just:"Correto. Quando o agente atinge a vítima pretendida e também um terceiro, aplica-se o concurso formal (Art. 70 CP)."},
+  {b:"Bloco 9 — Teoria do Erro",t:"O Erro sobre a Pessoa e a Aberratio Ictus com resultado único têm consequência jurídica idêntica: pune-se como se tivesse atingido a vítima pretendida.",ans:true,just:"Correto. Em ambos os casos, o Direito Penal ignora a vítima real atingida e considera as qualidades da vítima virtual (pretendida)."},
+  {b:"Bloco 9 — Teoria do Erro",t:"As qualidades da vítima virtual definem também o lugar do crime para fins de competência territorial.",ans:false,just:"Falso. Para fins de competência territorial, vale onde o crime aconteceu NA REALIDADE, não as características da vítima virtual."},
+  {b:"Bloco 9 — Teoria do Erro",t:"Na Aberratio Criminis, o agente quer atingir um bem jurídico e acaba atingindo outro de espécie diferente por erro na execução.",ans:true,just:"Correto. Ex: quer atingir patrimônio (quebrando vidraça) mas acerta uma pessoa. Responde por culpa se houver previsão legal."},
+  {b:"Bloco 9 — Teoria do Erro",t:"Se na Aberratio Criminis o crime pretendido for mais grave que o resultado atingido, o agente responde apenas pelo resultado culposo.",ans:false,just:"Falso. O agente responde pelo dolo do crime que TENTOU (tentativa do crime mais grave), não apenas pelo resultado culposo."},
+  {b:"Bloco 9 — Teoria do Erro",t:"No Dolo Geral (Aberratio Causae em sentido amplo), o resultado ocorre por ato subsequente àquele que o agente acreditava ser letal, respondendo por homicídio doloso consumado.",ans:true,just:"Correto. Ex: acha que matou por esganadura e joga o corpo no mar, mas a vítima morre afogada. Responde por homicídio doloso consumado, pois o dolo abrange todo o processo causal."},
+  {b:"Bloco 9 — Teoria do Erro",t:"No Erro sobre o Objeto, o agente responde considerando as qualidades do objeto que pretendia atingir, não do objeto efetivamente atingido.",ans:false,just:"Falso. No Erro sobre o Objeto, aplica-se a teoria da concretização: o agente responde pelo que EFETIVAMENTE atingiu. É diferente do Erro sobre a Pessoa, que considera a vítima virtual."},
+  {b:"Bloco 9 — Teoria do Erro",t:"O Erro de Tipo Permissivo inevitável exclui dolo e culpa; o evitável exclui o dolo, mas permite punição por crime culposo se previsto em lei.",ans:true,just:"Correto. Essa é a consequência do Erro de Tipo Permissivo: inevitável = exclui dolo e culpa; evitável = exclui dolo, mas mantém punição culposa se a lei previr."},
+
+  // BLOCO 10 — ITER CRIMINIS
+  {b:"Bloco 10 — Iter Criminis",t:"Pela Teoria Objetiva adotada pelo CP, a tentativa é punida com a pena do crime consumado, sem redução.",ans:false,just:"Falso. Pela Teoria Objetiva (Realística), a pena é a do crime consumado REDUZIDA de 1 a 2 terços, conforme o iter percorrido."},
+  {b:"Bloco 10 — Iter Criminis",t:"Na Tentativa Branca (Incruenta), o objeto material não é atingido ou ferido.",ans:true,just:"Correto. Tentativa Branca = vítima não atingida/ferida. Tentativa Cruenta = vítima atingida com lesão, mas sem consumação."},
+  {b:"Bloco 10 — Iter Criminis",t:"Na Tentativa Perfeita (Crime Falho), o agente é interrompido antes de praticar todos os atos executórios.",ans:false,just:"Falso. Isso é a Tentativa Imperfeita (Inacabada). Na Tentativa Perfeita, o agente ESGOTA todos os meios executórios que tinha, mas o resultado não ocorre por circunstâncias alheias à sua vontade."},
+  {b:"Bloco 10 — Iter Criminis",t:"Crimes habituais não admitem tentativa, pois a tipicidade depende de reiteração de atos e um ato isolado é atípico.",ans:true,just:"Correto. Um único ato é atípico nos crimes habituais; a reiteração já consuma o crime. Não há ponto intermediário para tentativa."},
+  {b:"Bloco 10 — Iter Criminis",t:"Crimes culposos admitem tentativa, pois o agente pode iniciar a execução sem consumar o resultado.",ans:false,just:"Falso. Crimes culposos não admitem tentativa como regra geral, pois não há vontade dirigida ao resultado — não existe 'tentar causar culposamente'."},
+  {b:"Bloco 10 — Iter Criminis",t:"Crimes complexos admitem tentativa assim que se inicia a execução de qualquer dos crimes que os compõem.",ans:true,just:"Correto. Ex: no roubo (furto + ameaça), basta iniciar a execução de qualquer dos elementos para caracterizar a tentativa de roubo."},
+  {b:"Bloco 10 — Iter Criminis",t:"O Brasil adota predominantemente a Teoria Objetivo-Formal para identificar o início da execução na tentativa.",ans:true,just:"Correto. Pela Teoria Objetivo-Formal, a execução começa quando o agente inicia a prática do verbo núcleo do tipo."},
+  {b:"Bloco 10 — Iter Criminis",t:"A cogitação e os atos preparatórios são puníveis no Brasil como regra geral.",ans:false,just:"Falso. A simples cogitação e os atos preparatórios são, via de regra, impuníveis. A punição começa com o início da execução."},
+  {b:"Bloco 10 — Iter Criminis",t:"Se alguém instiga outrem a cometer crime, mas este desiste antes de iniciar a execução, o instigador pode ser punido pelo ajuste.",ans:false,just:"Falso. Conforme o Art. 31 do CP, o ajuste, a determinação ou a instigação não são puníveis se o crime não chegar ao menos à tentativa."},
+  {b:"Bloco 10 — Iter Criminis",t:"No crime permanente, a consumação se prolonga no tempo por vontade do agente; no crime instantâneo com efeitos permanentes, a consumação ocorre em um só momento mas o resultado é irreversível.",ans:true,just:"Correto. Ex de permanente: sequestro. Ex de instantâneo com efeitos permanentes: homicídio — a morte é irreversível, mas a consumação ocorreu em um instante."},
+  {b:"Bloco 10 — Iter Criminis",t:"Nos crimes omissivos impróprios, o nexo de causalidade entre a omissão e o resultado é físico, pois a inação do garantidor causa materialmente o resultado.",ans:false,just:"Falso. O nexo é NORMATIVO (ou jurídico), não físico. A lei impõe ao garantidor o dever de evitar o resultado; é a norma que cria o nexo."},
+  {b:"Bloco 10 — Iter Criminis",t:"Crimes de mera conduta não admitem nexo causal, pois não possuem resultado naturalístico.",ans:true,just:"Correto. O nexo causal liga conduta a resultado naturalístico. Crimes de mera conduta não têm resultado naturalístico, logo não comportam nexo causal."},
+  {b:"Bloco 10 — Iter Criminis",t:"No Crime Impossível (Art. 17 CP), pune-se a tentativa quando o meio é relativamente ineficaz.",ans:false,just:"Falso. O Crime Impossível ocorre quando o meio é ABSOLUTAMENTE ineficaz ou o objeto é absolutamente impróprio. Nesse caso, não se pune nem a tentativa. Se a ineficácia ou impropriedade for relativa, há tentativa punível."},
+
+  // BLOCO 11 — ESTADO DE NECESSIDADE
+  {b:"Bloco 11 — Estado de Necessidade",t:"O Código Penal Brasileiro adota a Teoria Diferenciadora para o Estado de Necessidade, distinguindo o justificante do exculpante.",ans:false,just:"Falso. O CP comum adota a Teoria UNITÁRIA: todo estado de necessidade é justificante (exclui a ilicitude). A Teoria Diferenciadora é adotada pelo Código Penal Militar."},
+  {b:"Bloco 11 — Estado de Necessidade",t:"Pela Teoria Diferenciadora, quando o bem preservado é de valor menor ou igual ao bem sacrificado, o estado de necessidade é exculpante.",ans:true,just:"Correto. Na Teoria Diferenciadora: bem preservado > bem sacrificado = justificante (exclui ilicitude); bem preservado ≤ bem sacrificado = exculpante (exclui culpabilidade)."},
+  {b:"Bloco 11 — Estado de Necessidade",t:"No Estado de Necessidade Justificante pelo CP comum, o bem preservado deve ser de valor igual ou superior ao bem sacrificado.",ans:true,just:"Correto. O sopesamento exige Bem Preservado ≥ Bem Sacrificado para que haja exclusão da ilicitude pela Teoria Unitária."},
+  {b:"Bloco 11 — Estado de Necessidade",t:"No 'Exemplo de Carnéades' (dois náufragos, uma tábua), o Brasil classifica a conduta como Estado de Necessidade Justificante.",ans:true,just:"Correto. Como os bens em conflito são iguais (vida vs. vida) e o CP adota a Teoria Unitária (bem preservado ≥ bem sacrificado), configura-se Estado de Necessidade Justificante."},
+  {b:"Bloco 11 — Estado de Necessidade",t:"Quando o bem sacrificado é de valor superior ao preservado, o CP comum reconhece Estado de Necessidade Exculpante por expressa previsão legal.",ans:false,just:"Falso. O CP comum não prevê expressamente o Estado de Necessidade Exculpante. Nessa situação, o fato continua ilícito, mas a doutrina admite exclusão da culpabilidade por inexigibilidade de conduta diversa."},
+
+  // BLOCO 12 — SISTEMAS PENAIS E TEORIAS DA CONDUTA
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"No Causalismo, dolo e culpa eram analisados no tipo penal, junto aos elementos objetivos e descritivos.",ans:false,just:"Falso. No Causalismo, dolo e culpa ficavam na CULPABILIDADE. O tipo era composto exclusivamente por elementos objetivos e descritivos (conduta 'cega', sem finalidade)."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"O 'Dolo Normativo' (Dolus Malus) do Neokantismo contém em seu interior a consciência da ilicitude.",ans:true,just:"Correto. O Dolo Normativo = vontade + consciência + saber que é errado (consciência da ilicitude integra o dolo)."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"A grande inovação do Finalismo de Welzel foi deslocar o dolo e a culpa da culpabilidade para o tipo penal.",ans:true,just:"Correto. O Finalismo colocou dolo e culpa no tipo penal (Dolo Natural), retirando-os da culpabilidade onde estavam no Causalismo."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"O 'Dolo Natural' do Finalismo contém a consciência da ilicitude como parte integrante.",ans:false,just:"Falso. O Dolo Natural (Finalismo) é desprovido de juízo de valor — apenas vontade e consciência de realizar os elementos do tipo. A consciência da ilicitude permanece na CULPABILIDADE."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"O elemento 'Exigibilidade de Conduta Diversa' surgiu no sistema Neokantista.",ans:true,just:"Correto. O Neokantismo introduziu esse juízo normativo externo na culpabilidade. No Causalismo, esse elemento ainda não existia."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"A 'Potencial Consciência da Ilicitude' é elemento da culpabilidade nos sistemas Neokantista e Finalista.",ans:true,just:"Correto. No Causalismo, a consciência era atual e ficava dentro do dolo (culpabilidade). No Neokantismo e Finalismo, passou a ser POTENCIAL e é elemento autônomo da culpabilidade."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"Pela Ratio Essendi (Neokantismo), a tipicidade é apenas um indício (presunção relativa) de ilicitude.",ans:false,just:"Falso. Ratio Essendi é do Neokantismo e significa que tipicidade é a ESSÊNCIA da ilicitude (fusão entre tipo e ilicitude). A Ratio Cognoscendi (Finalismo) é que a tipicidade é apenas indício de ilicitude."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"O Funcionalismo Teleológico de Roxin introduz a 'Responsabilidade' (culpabilidade + necessidade de pena) como limite à sanção penal.",ans:true,just:"Correto. Para Roxin, o Direito Penal serve para proteger bens jurídicos, e a Responsabilidade (culpabilidade + necessidade de pena) é o limite racional da intervenção punitiva."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"Para Jakobs (Funcionalismo Radical), o Direito Penal serve primariamente para proteger bens jurídicos.",ans:false,just:"Falso. Para Jakobs, o Direito Penal serve para garantir a VIGÊNCIA DA NORMA e reafirmar a confiança no sistema social (visão sistêmica de Luhmann). Quem defende a proteção de bens jurídicos é Roxin."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"A Tipicidade Conglobante de Zaffaroni exige que o fato seja proibido por todo o ordenamento jurídico para ser considerado típico.",ans:true,just:"Correto. Pela Tipicidade Conglobante, um fato não pode ser típico se outra norma do mesmo ordenamento o fomenta ou determina."},
+  {b:"Bloco 12 — Sistemas Penais e Teorias da Conduta",t:"O Correcionalismo Penal (Karl Roeder) defende penas com prazo fixo e determinado para garantir segurança jurídica ao condenado.",ans:false,just:"Falso. O Correcionalismo defende penas SEM prazo fixo, durando o tempo necessário para a correção/emenda do delinquente, tratando a pena como remédio para a 'vontade doente'."},
+
+  // BLOCO 13 — VELOCIDADES DO DIREITO PENAL
+  {b:"Bloco 13 — Velocidades do Direito Penal",t:"A Primeira Velocidade do Direito Penal caracteriza-se por penas de prisão com respeito máximo às garantias fundamentais.",ans:true,just:"Correto. A 1ª Velocidade = penas privativas de liberdade + processo rígido com garantias plenas (Direito Penal Clássico / DP Nuclear)."},
+  {b:"Bloco 13 — Velocidades do Direito Penal",t:"A Segunda Velocidade do Direito Penal substitui a prisão por penas alternativas ou multas com garantias processuais mais flexíveis.",ans:true,just:"Correto. A 2ª Velocidade troca a prisão por penas alternativas/multas com processo acelerado e garantias mais flexíveis. Ex: Juizados Especiais."},
+  {b:"Bloco 13 — Velocidades do Direito Penal",t:"A Terceira Velocidade do Direito Penal combina penas de prisão severas com respeito máximo às garantias processuais.",ans:false,just:"Falso. A 3ª Velocidade (Direito Penal do Inimigo) combina penas de prisão SEVERAS (da 1ª vel.) com garantias MITIGADAS (da 2ª vel.) — o pior dos dois mundos."},
+  {b:"Bloco 13 — Velocidades do Direito Penal",t:"O Direito Penal do Inimigo de Jakobs antecipa a punibilidade para atos preparatórios e foca na periculosidade do agente.",ans:true,just:"Correto. Características do DP do Inimigo: antecipação da punibilidade, penas desproporcionalmente altas, mitigação de garantias e foco na periculosidade (Direito Penal do Autor)."},
+  {b:"Bloco 13 — Velocidades do Direito Penal",t:"A Quarta Velocidade do Direito Penal (Daniel Pastor) foca em crimes comuns com supranacionalidade, permitindo que o TPI julgue cidadãos comuns.",ans:false,just:"Falso. A 4ª Velocidade foca em crimes contra a humanidade (genocídio, crimes de guerra) e a supranacionalidade atinge CHEFES DE ESTADO, que perdem suas imunidades para serem julgados pelo TPI."},
+  {b:"Bloco 13 — Velocidades do Direito Penal",t:"O Direito Penal do Cidadão é retrospectivo (olha para o fato passado) e respeita garantias plenas.",ans:true,just:"Correto. O Direito Penal do Cidadão é retrospectivo (julga fatos passados) com garantias plenas. O Direito Penal do Inimigo é prospectivo (neutraliza perigos futuros) com garantias mitigadas."},
+  {b:"Bloco 13 — Velocidades do Direito Penal",t:"O Garantismo Binocular (Positivo) olha apenas para as garantias do acusado, sendo idêntico ao Garantismo Monocular de Ferrajoli.",ans:false,just:"Falso. O Garantismo Monocular foca exclusivamente nas garantias do acusado. O Binocular (Positivo) também considera a proteção das vítimas e da sociedade, impondo ao Estado o dever de proteção suficiente dos bens jurídicos."},
+  {b:"Bloco 13 — Velocidades do Direito Penal",t:"O Abolicionismo Penal propõe substituir o sistema penal por métodos alternativos de resolução de conflitos como conciliação e reparação.",ans:true,just:"Correto. O Abolicionismo critica a legitimidade do sistema penal e propõe sua substituição por meios alternativos de solução de conflitos."},
+
+  // BLOCO 14 — TERRITORIALIDADE E EXTRATERRITORIALIDADE
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"O CP adota a Teoria da Ubiquidade para o lugar do crime (Art. 6º) e a Teoria da Atividade para o tempo do crime (Art. 4º).",ans:true,just:"Correto. Lugar = Ubiquidade (ação/omissão OU resultado). Tempo = Atividade (momento da ação ou omissão)."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"Uma embaixada estrangeira no Brasil é extensão do território estrangeiro e, portanto, a lei brasileira não se aplica em seu interior.",ans:false,just:"Falso. A embaixada é TERRITÓRIO BRASILEIRO, mas goza de inviolabilidade e imunidades diplomáticas pela Convenção de Viena de 1961. Território e imunidade são conceitos distintos."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"Embarcações e aeronaves privadas brasileiras em alto-mar ou espaço aéreo internacional são consideradas extensão do território nacional.",ans:true,just:"Correto. O Art. 5º, §2º do CP considera território brasileiro as embarcações e aeronaves privadas brasileiras em alto-mar ou espaço aéreo internacional correspondente."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"A Teoria da Ubiquidade (Art. 6º CP) aplica-se para fixar a competência em crimes plurilocais dentro do Brasil.",ans:false,just:"Falso. Para crimes plurilocais DENTRO DO BRASIL, aplica-se a Teoria do Resultado (Art. 70 CPP). A Ubiquidade do Art. 6º é para definir se o crime é considerado praticado no Brasil em relação a crimes internacionais."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"Nos Juizados Especiais Criminais (Lei 9.099/95), a competência é fixada pela Teoria da Ubiquidade.",ans:false,just:"Falso. Os Juizados Especiais Criminais adotam a Teoria da ATIVIDADE (lugar da ação ou omissão), não a da Ubiquidade."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"A lei brasileira não se aplica a contravenções penais praticadas no estrangeiro.",ans:true,just:"Correto. O Art. 2º da LCP expressamente veda a aplicação da lei brasileira às contravenções praticadas no exterior."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"Na Extraterritorialidade Incondicionada, a lei brasileira se aplica mesmo que o agente tenha sido absolvido ou já tenha cumprido pena no exterior.",ans:true,just:"Correto. Na extraterritorialidade incondicionada (Art. 7º, I), a lei brasileira se aplica independentemente de qualquer condição, inclusive de absolvição ou cumprimento de pena no exterior."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"O crime de genocídio cometido por brasileiro no exterior está sujeito à Extraterritorialidade Condicionada.",ans:false,just:"Falso. O genocídio praticado por brasileiro no exterior sujeita-se à Extraterritorialidade INCONDICIONADA (Art. 7º, I, 'd'). A lei brasileira se aplica sem condições."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"O Princípio da Nacionalidade Passiva aplica-se ao crime cometido por estrangeiro contra vítima brasileira fora do Brasil, sujeito à Extraterritorialidade Hipercondicionada.",ans:true,just:"Correto. O Princípio da Nacionalidade Passiva exige, além das condições do §2º, que não tenha sido pedida ou tenha sido negada a extradição e que haja requisição do Ministro da Justiça."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"O Princípio da Representação (Bandeira/Pavilhão) aplica-se quando o Brasil substitui o Estado estrangeiro que deixou de julgar o crime em aeronave ou embarcação privada brasileira.",ans:true,just:"Correto. Por isso é também chamado de Princípio da Substituição: o Brasil julga o crime praticado em embarcação/aeronave privada brasileira no estrangeiro quando lá não for julgado."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"A pena cumprida no estrangeiro, quando idêntica à brasileira, é abatida (detração) da pena imposta no Brasil.",ans:true,just:"Correto. Art. 8º CP: pena cumprida no estrangeiro atenua a pena brasileira quando diversas; é computada (detração) quando idênticas."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"A sentença estrangeira pode ser homologada no STJ para fins de cumprimento de pena privativa de liberdade no Brasil.",ans:false,just:"Falso. A sentença estrangeira NÃO se homologa para cumprimento de pena privativa de liberdade. Os fins penais da homologação são: reparação do dano (efeitos civis) e imposição de medida de segurança."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"Para gerar reincidência no Brasil, a sentença penal estrangeira exige homologação prévia pelo STJ.",ans:false,just:"Falso. Para fins de REINCIDÊNCIA, a sentença estrangeira produz efeitos automaticamente, sem necessidade de homologação pelo STJ."},
+  {b:"Bloco 14 — Territorialidade e Extraterritorialidade",t:"Um avião privado brasileiro em solo de país estrangeiro é extensão do território brasileiro.",ans:false,just:"Falso. Apenas aeronaves PÚBLICAS ou a serviço do governo mantêm essa característica em solo estrangeiro. O avião privado em território estrangeiro pode atrair a lei brasileira por extraterritorialidade condicionada, não por extensão territorial."},
+
+  // BLOCO 15 — LEI PENAL NO TEMPO
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"A Abolitio Criminis extingue a punibilidade e cessa os efeitos penais da condenação, mas os efeitos civis permanecem.",ans:true,just:"Correto. A lei nova que deixa de considerar o fato como crime retroage para extinguir punibilidade e cessar efeitos penais. Os efeitos civis (indenização, por ex.) permanecem."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"A Novatio Legis in Pejus pode retroagir para alcançar fatos anteriores à sua vigência quando houver interesse público relevante.",ans:false,just:"Falso. A Novatio Legis in Pejus NUNCA retroage. O Princípio da Irretroatividade da Lei Penal Gravosa é absoluto, sem exceções."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"A Ultra-atividade ocorre quando lei revogada continua sendo aplicada a fatos ocorridos durante sua vigência por ser mais benéfica ao réu.",ans:true,just:"Correto. A lei mais benéfica (Lex Mitior), mesmo revogada, continua valendo (ultra-atividade) para fatos praticados sob sua vigência."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"A Extra-atividade é gênero que abrange tanto a Retroatividade quanto a Ultra-atividade da lei penal.",ans:true,just:"Correto. Extra-atividade = gênero. Retroatividade (lei nova benéfica volta ao passado) + Ultra-atividade (lei revogada continua valendo) são suas espécies."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"A Lei Intermediária (mais benéfica, em vigor após o crime e antes do julgamento) não pode ser aplicada por não ser contemporânea ao fato nem ao julgamento.",ans:false,just:"Falso. A Lei Intermediária DEVE ser aplicada se for a mais benéfica, pela extra-atividade. O princípio da benignidade sobrepõe-se à contemporaneidade."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"A lei penal mais benéfica retroage inclusive para casos com trânsito em julgado.",ans:true,just:"Correto. A lei benéfica retroage sempre, inclusive para atingir condenações já definitivas (Art. 2º, parágrafo único, CP). Não há limitação ao trânsito em julgado."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"É permitido ao juiz combinar partes de lei antiga com partes de lei nova para criar norma mais favorável ao réu (Lex Tertia), conforme a Súmula 501 do STJ.",ans:false,just:"Falso. A Súmula 501 do STJ PROÍBE a combinação de leis (Lex Tertia). O juiz deve aplicar uma ou outra lei em sua integralidade, não criar uma terceira norma híbrida."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"Pela Súmula 711 do STF, em crimes permanentes ou continuados, aplica-se a lei mais grave que entrou em vigor antes da cessação da permanência.",ans:true,just:"Correto. Súmula 711 STF: a lei mais grave se aplica ao crime permanente ou continuado desde que tenha entrado em vigor antes da cessação da permanência ou continuidade."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"A Novatio Legis Incriminadora retroage para alcançar fatos praticados antes de sua vigência, se houver previsão expressa.",ans:false,just:"Falso. A Novatio Legis Incriminadora NUNCA retroage. Lei que cria novo tipo penal só vale para fatos cometidos após sua vigência — sem exceção."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"A lei processual penal se aplica desde logo (tempus regit actum), sem retroatividade da lei mais benéfica, diferentemente do direito penal material.",ans:true,just:"Correto. No processo penal puro aplica-se o princípio da aplicação imediata. A retroatividade in melius é exclusiva do Direito Penal Material."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"Leis Temporárias e Excepcionais são ultra-ativas: aplicam-se aos fatos ocorridos durante sua vigência mesmo após encerrado o prazo ou a situação de emergência.",ans:true,just:"Correto. A ultra-atividade das leis temporária e excepcional é expressamente prevista no CP. Caso contrário, ninguém seria punido, pois o prazo expira antes do julgamento."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"Uma lei em período de vacatio legis pode ser aplicada imediatamente se for mais benéfica ao réu.",ans:false,just:"Falso. Durante a vacatio legis, a lei ainda não tem eficácia jurídica. Deve-se aguardar sua entrada em vigor — não há aplicação antecipada, nem mesmo para beneficiar o réu."},
+  {b:"Bloco 15 — Lei Penal no Tempo",t:"O Pacto de San José da Costa Rica prevê expressamente que, se após o delito a lei estabelecer pena mais leve, o delinquente deve beneficiar-se dela.",ans:true,just:"Correto. O Art. 9º do Pacto de San José da Costa Rica estabelece expressamente a retroatividade da lei penal mais benéfica como direito do acusado."}
+];
+
+const STORAGE_KEY = "quiz_penal_bloco1_parte2_progress_v1";
+
+let current = 0;
+let answers = new Array(Q.length).fill(null);
+
+/* ---------- PERSISTÊNCIA (localStorage; usa window.storage se disponível) ---------- */
+async function storageGet(key){
+  if (window.storage){
+    try{
+      const r = await window.storage.get(key, false);
+      return r ? JSON.parse(r.value) : null;
+    }catch(e){ return null; }
+  }
+  try{
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : null;
+  }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  if (window.storage){
+    try{ await window.storage.set(key, JSON.stringify(value), false); return true; }
+    catch(e){ return false; }
+  }
+  try{ localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch(e){ return false; }
+}
+
+async function saveProgress(){
+  const ok = await storageSet(STORAGE_KEY, {current, answers});
+  const el = document.getElementById('save-indicator');
+  if (el){
+    el.textContent = ok
+      ? ('✓ Progresso salvo automaticamente — ' + new Date().toLocaleTimeString('pt-BR'))
+      : '⚠ Não foi possível salvar o progresso neste navegador.';
+  }
+}
+
+async function loadProgress(){
+  const saved = await storageGet(STORAGE_KEY);
+  if (saved && Array.isArray(saved.answers) && saved.answers.length === Q.length){
+    answers = saved.answers;
+    if (typeof saved.current === 'number' && saved.current >= 0 && saved.current < Q.length){
+      current = saved.current;
+    }
+  }
+}
+
+async function resetProgress(){
+  if (!confirm('Tem certeza que deseja reiniciar todo o progresso deste quiz? Essa ação não pode ser desfeita.')) return;
+  current = 0;
+  answers = new Array(Q.length).fill(null);
+  await saveProgress();
+  renderQuestion();
+}
+
+function updateStats(){
+  let resp = answers.filter(a => a !== null).length;
+  let ok   = answers.filter((a,i) => a !== null && a === Q[i].ans).length;
+  let err  = resp - ok;
+  document.getElementById('s-resp').textContent = resp;
+  document.getElementById('s-ok').textContent   = ok;
+  document.getElementById('s-err').textContent  = err;
+  let pct = resp > 0 ? Math.round(ok / resp * 100) : null;
+  let pEl = document.getElementById('s-pct');
+  pEl.textContent = pct !== null ? pct + '%' : '—';
+  pEl.style.color = pct === null ? '#333' : pct >= 70 ? '#1a8c4e' : '#c0392b';
+  document.getElementById('prog').style.width = (resp / Q.length * 100) + '%';
+}
+
+function renderQuestion(){
+  const q = Q[current];
+  const userAns = answers[current];
+  const answered = userAns !== null;
+
+  let vClass = '', fClass = '';
+  if(answered){
+    vClass = userAns === true  ? (q.ans === true  ? 'correct' : 'wrong') : 'missed';
+    fClass = userAns === false ? (q.ans === false ? 'correct' : 'wrong') : 'missed';
+  }
+
+  let feedbackClass = '', feedbackTitle = '', feedbackText = '';
+  if(answered){
+    const right = userAns === q.ans;
+    feedbackClass = right ? 'correct' : 'wrong';
+    feedbackTitle = right ? '✓ Correto!' : '✗ Errado!';
+    feedbackText  = q.just;
+  }
+
+  document.getElementById('q-area').innerHTML = `
+    <div class="q-card">
+      <div class="q-meta">${q.b} &nbsp;·&nbsp; Questão ${current + 1} de ${Q.length}</div>
+      <div class="q-text">${q.t}</div>
+      <div class="btn-row">
+        <button class="btn-vf ${vClass}" onclick="answer(true)"  ${answered ? 'disabled' : ''}>✓ &nbsp;Verdadeiro</button>
+        <button class="btn-vf ${fClass}" onclick="answer(false)" ${answered ? 'disabled' : ''}>✗ &nbsp;Falso</button>
+      </div>
+      <div class="feedback-box ${feedbackClass} ${answered ? 'show' : ''}">
+        <strong>${feedbackTitle}</strong>${feedbackText}
+      </div>
+    </div>`;
+
+  document.getElementById('q-counter').textContent = (current + 1) + ' / ' + Q.length;
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === Q.length - 1;
+  updateStats();
+}
+
+function answer(val){
+  if(answers[current] !== null) return;
+  answers[current] = val;
+  renderQuestion();
+  saveProgress();
+}
+
+function navigate(dir){
+  current = Math.max(0, Math.min(Q.length - 1, current + dir));
+  renderQuestion();
+  saveProgress();
+}
+
+(async function init(){
+  await loadProgress();
+  renderQuestion();
+})();
+</script>
+</body>
+</html>

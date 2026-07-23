@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz V/F — Direito Penal — Parte 4 (Territorialidade, Extraterritorialidade, Imunidades, Insignificância e Pontos Residuais)</title>
+<style>
+  :root{
+    --navy:#1b2a4a;
+    --navy-dark:#121d35;
+    --cream:#f7f3ea;
+    --card:#ffffff;
+    --gold:#b8901f;
+    --brick:#9c3b32;
+    --ink:#22242a;
+    --muted:#6b6f7a;
+    --green:#2f7d4f;
+    --green-bg:#e7f3ec;
+    --red:#b3392c;
+    --red-bg:#fbeae7;
+    --line:#e3ddcf;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0;}
+  #app{max-width:880px;margin:0 auto;padding:18px 16px 60px;}
+
+  .topbar{
+    background:var(--navy);
+    color:#f2efe4;
+    padding:18px 20px;
+    border-radius:14px;
+    margin-bottom:14px;
+  }
+  .topbar h1{font-size:1.35rem;letter-spacing:.2px;}
+  .topbar p{margin:4px 0 0;font-size:.85rem;color:#cfd4e0;}
+
+  .stats{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:14px;
+  }
+  .stat{
+    flex:1 1 90px;
+    text-align:center;
+    padding:6px 4px;
+    border-right:1px solid var(--line);
+  }
+  .stat:last-child{border-right:none;}
+  .stat .num{font-size:1.25rem;font-weight:700;font-family:Georgia,serif;}
+  .stat .lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+  .stat.correct .num{color:var(--green);}
+  .stat.wrong .num{color:var(--red);}
+  .stat.guess .num{color:var(--gold);}
+
+  .toolsrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .toolsrow button{
+    flex:1 1 auto;
+    padding:9px 12px;
+    border-radius:9px;
+    border:1px solid var(--navy);
+    background:var(--card);
+    color:var(--navy);
+    font-size:.82rem;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .toolsrow button:hover{background:var(--navy);color:#fff;}
+  .toolsrow button.danger{border-color:var(--red);color:var(--red);}
+  .toolsrow button.danger:hover{background:var(--red);color:#fff;}
+
+  .tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .tab-btn{
+    flex:1;
+    padding:10px;
+    border-radius:9px 9px 0 0;
+    border:1px solid var(--line);
+    background:#efe9da;
+    color:var(--muted);
+    cursor:pointer;
+    font-weight:700;
+    font-size:.88rem;
+  }
+  .tab-btn.active{background:var(--card);color:var(--navy);border-bottom:1px solid var(--card);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .progresswrap{margin-bottom:10px;}
+  .progressbar{
+    height:8px;background:#e6e0d0;border-radius:6px;overflow:hidden;
+  }
+  .progressfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--navy));width:0%;transition:width .25s;}
+  .progresstext{font-size:.75rem;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between;}
+
+  .qjump{display:flex;gap:8px;align-items:center;margin-bottom:14px;font-size:.82rem;}
+  .qjump select{
+    flex:1;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:.82rem;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:14px;
+  }
+  .badge{
+    display:inline-block;
+    background:var(--navy);
+    color:#fff;
+    font-size:.7rem;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:20px;
+    letter-spacing:.3px;
+    margin-bottom:10px;
+  }
+  .qnum{font-size:.78rem;color:var(--muted);margin-bottom:6px;}
+  .qtext{font-size:1.05rem;font-weight:500;margin-bottom:18px;}
+
+  .vf-buttons{display:flex;gap:12px;margin-bottom:6px;}
+  .btn-v,.btn-f{
+    flex:1;
+    padding:14px;
+    border-radius:10px;
+    font-size:1rem;
+    font-weight:700;
+    cursor:pointer;
+    border:2px solid transparent;
+  }
+  .btn-v{background:var(--green-bg);color:var(--green);border-color:var(--green);}
+  .btn-v:hover{background:var(--green);color:#fff;}
+  .btn-f{background:var(--red-bg);color:var(--red);border-color:var(--red);}
+  .btn-f:hover{background:var(--red);color:#fff;}
+  .vf-buttons button:disabled{opacity:.45;cursor:default;}
+  .vf-buttons button:disabled:hover{background:inherit;color:inherit;}
+
+  .feedback{margin-top:16px;}
+  .result-banner{
+    padding:10px 14px;border-radius:9px;font-weight:700;margin-bottom:8px;font-size:.95rem;
+  }
+  .result-banner.correct{background:var(--green-bg);color:var(--green);}
+  .result-banner.wrong{background:var(--red-bg);color:var(--red);}
+
+  .gabarito-banner{
+    padding:8px 14px;border-radius:9px;margin-bottom:10px;font-size:.85rem;font-weight:700;
+    border:1px dashed var(--line);
+  }
+  .gabarito-banner.is-true{color:var(--green);}
+  .gabarito-banner.is-false{color:var(--red);}
+
+  .justification{
+    background:#f4f0e3;
+    border-left:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    font-size:.88rem;
+    color:#3c3b35;
+  }
+  .justification b{color:var(--navy);}
+
+  .guess-row{margin-top:14px;}
+  .guess-row p{font-size:.82rem;color:var(--muted);margin:0 0 8px;}
+  .guess-btns{display:flex;gap:10px;}
+  .guess-btns button{
+    flex:1;padding:9px;border-radius:8px;border:1px solid var(--gold);background:#fff;color:var(--gold);font-weight:700;font-size:.82rem;cursor:pointer;
+  }
+  .guess-btns button:hover{background:var(--gold);color:#fff;}
+  .guess-tag{
+    display:inline-block;margin-top:10px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:700;
+  }
+  .guess-tag.sabia{background:#e7f3ec;color:var(--green);}
+  .guess-tag.chute{background:#fbf2dc;color:var(--gold);}
+
+  .redo-link{display:inline-block;margin-top:12px;font-size:.78rem;color:var(--muted);cursor:pointer;text-decoration:underline;}
+
+  .navbtns{display:flex;justify-content:space-between;gap:10px;margin-top:6px;}
+  .navbtns button{
+    flex:1;padding:11px;border-radius:9px;border:1px solid var(--navy);background:var(--navy);color:#fff;font-weight:700;cursor:pointer;
+  }
+  .navbtns button:disabled{opacity:.35;cursor:default;}
+  .navbtns button.secondary{background:#fff;color:var(--navy);}
+
+  .review-section h3{color:var(--navy);font-size:1rem;margin-bottom:10px;border-bottom:2px solid var(--line);padding-bottom:6px;}
+  .review-item{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;
+  }
+  .review-item .qtext{font-size:.92rem;margin-bottom:8px;font-weight:500;}
+  .empty-state{color:var(--muted);font-size:.85rem;padding:14px;text-align:center;background:var(--card);border:1px dashed var(--line);border-radius:10px;}
+
+  .savehint{font-size:.72rem;color:var(--muted);text-align:center;margin-top:10px;}
+  .footer-note{font-size:.72rem;color:var(--muted);text-align:center;margin-top:18px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <h1>⚖️ Quiz V/F — Direito Penal</h1>
+    <p>Parte 4 · Territorialidade e Extraterritorialidade · Imunidade Diplomática e Consular · Conflito Aparente de Normas · Princípios · Lei Penal no Tempo · Insignificância (pontos residuais)</p>
+  </div>
+
+  <div class="stats" id="statsBar"></div>
+
+  <div class="toolsrow">
+    <button id="btnReset">🔄 Reiniciar progresso</button>
+    <button id="btnDownload">⬇️ Baixar HTML (usar offline)</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="quiz">📝 Quiz</button>
+    <button class="tab-btn" data-tab="review">🔎 Revisão (erros e chutes)</button>
+  </div>
+
+  <div class="panel active" id="panelQuiz">
+    <div class="progresswrap">
+      <div class="progressbar"><div class="progressfill" id="progressFill"></div></div>
+      <div class="progresstext"><span id="progressText">0/110 respondidas</span><span id="progressPct">0%</span></div>
+    </div>
+
+    <div class="qjump">
+      <label for="qSelect">Ir para:</label>
+      <select id="qSelect"></select>
+    </div>
+
+    <div class="card" id="questionCard"></div>
+
+    <div class="navbtns">
+      <button class="secondary" id="btnPrev">← Anterior</button>
+      <button id="btnNext">Próxima →</button>
+    </div>
+    <p class="savehint" id="saveHint"></p>
+  </div>
+
+  <div class="panel" id="panelReview">
+    <div class="review-section">
+      <h3>❌ Questões que você errou</h3>
+      <div id="reviewWrong"></div>
+    </div>
+    <div class="review-section">
+      <h3>🎲 Questões que você acertou no chute</h3>
+      <div id="reviewGuess"></div>
+    </div>
+  </div>
+
+  <p class="footer-note">
+    O progresso é salvo automaticamente neste quiz. Se você usar o botão "Baixar HTML", o arquivo salvo no seu
+    computador terá um progresso próprio e separado (guardado no navegador que você usar para abri-lo).
+  </p>
+</div>
+
+<script>
+/* =========================================================
+   BANCO DE QUESTÕES — extraídas exclusivamente do material
+   enviado (Parte 3 — Blocos 16 a 22)
+   ========================================================= */
+const QUESTIONS = [
+// ---------------- BLOCO 5 — CONFLITO APARENTE DE NORMAS (pontos que faltaram) ----------------
+{id:1,block:"BLOCO 5 — Conflito Aparente de Normas",text:"A lei especial não revoga a lei geral quando a afasta no caso concreto: ambas continuam vigentes, pois a exclusão ocorre apenas no caso concreto, e não no plano abstrato.",answer:true,
+justification:"Correto. A lei especial apenas exclui a aplicação da lei geral no caso concreto, sem revogá-la; a análise é feita no plano abstrato, onde ambas permanecem vigentes."},
+{id:2,block:"BLOCO 5 — Conflito Aparente de Normas",text:"Os três requisitos do conflito aparente de normas são: unidade de fato, pluralidade de normas aparentemente aplicáveis e vigência simultânea das normas em conflito.",answer:true,
+justification:"Correto. Esses são os três requisitos, que não se confundem com pluralidade de condutas, liame subjetivo ou relevância causal — estes são requisitos do concurso de pessoas."},
+
+// ---------------- BLOCO 7 — PRINCÍPIOS DO DIREITO PENAL (pontos que faltaram) ----------------
+{id:3,block:"BLOCO 7 — Princípios do Direito Penal",text:"O Direito Penal brasileiro não rechaça o paternalismo de forma absoluta: existem normas que protegem o indivíduo de si mesmo em situações de vulnerabilidade, como a criminalização do auxílio ao suicídio, ainda que o paternalismo rígido e direto seja rejeitado.",answer:true,
+justification:"Correto. O DP é orientado pela fragmentariedade e intervenção mínima, mas admite exceções pontuais de proteção do indivíduo contra si mesmo; o que se rejeita é o paternalismo rígido e direto."},
+{id:4,block:"BLOCO 7 — Princípios do Direito Penal",text:"O consentimento do trabalhador afasta o crime de redução à condição análoga à de escravo (Art. 149 CP), pois a liberdade individual é bem jurídico disponível.",answer:false,
+justification:"Errado. A dignidade da pessoa humana é bem jurídico indisponível; o brocardo 'volenti non fit iniuria' não se aplica a direitos indisponíveis no Direito Penal brasileiro."},
+{id:5,block:"BLOCO 7 — Princípios do Direito Penal",text:"O crime de instigação ao suicídio (Art. 122 CP) é punível de forma autônoma, independentemente de o executor praticar o verbo núcleo de outro tipo penal.",answer:true,
+justification:"Correto. O Art. 122 do CP pune autonomamente quem induz ou instiga alguém a suicidar-se, sem depender de outra conduta típica do executor."},
+{id:6,block:"BLOCO 7 — Princípios do Direito Penal",text:"A contravenção penal de vadiagem foi recepcionada pela Constituição Federal de 1988.",answer:false,
+justification:"Errado. O STF entendeu que não foi recepcionada, por violar a dignidade humana, a isonomia e o Princípio do Direito Penal do Fato — ela pune o indivíduo pelo que 'é', não pelo que 'fez'."},
+{id:7,block:"BLOCO 7 — Princípios do Direito Penal",text:"O Princípio da Individualização da Pena opera apenas na fase legislativa (cominação abstrata), não alcançando a fase de execução penal.",answer:false,
+justification:"Errado. O princípio opera em três fases: legislativa, judicial (dosimetria) e executória/administrativa (garantias individualizadas na LEP), sendo direito fundamental previsto no Art. 5º, XLVI, da CF."},
+{id:8,block:"BLOCO 7 — Princípios do Direito Penal",text:"A Súmula 241 do STJ, fundada no Princípio do Ne Bis In Idem, veda que a reincidência seja usada simultaneamente como agravante e como circunstância judicial desfavorável na pena-base.",answer:true,
+justification:"Correto. É exatamente esse o fundamento e o conteúdo da Súmula 241 do STJ."},
+{id:9,block:"BLOCO 7 — Princípios do Direito Penal",text:"O STF tem aplicado o Princípio da Adequação Social para afastar a tipicidade de condutas como o porte de drogas para uso próprio e crimes contra direitos autorais.",answer:true,
+justification:"Correto. São exemplos citados de aplicação do princípio pelo STF, reconhecendo a atipicidade material de condutas socialmente aceitas."},
+
+// ---------------- BLOCO 15 — LEI PENAL NO TEMPO (pontos que faltaram) ----------------
+{id:10,block:"BLOCO 15 — Lei Penal no Tempo",text:"No estelionato iniciado sob uma lei e consumado sob outra mais grave, aplica-se a lei vigente no momento do resultado, ou seja, da obtenção da vantagem ilícita.",answer:false,
+justification:"Errado. Aplica-se a lei vigente no momento da ação (teoria da atividade — Art. 4º CP); o momento do resultado é irrelevante para definir a lei aplicável."},
+{id:11,block:"BLOCO 15 — Lei Penal no Tempo",text:"Um agente de 17 anos que dispara contra a vítima, que morre dois meses depois, responde pelo ECA, pois pela teoria da atividade o crime é considerado praticado no momento da conduta, quando ele ainda era menor.",answer:true,
+justification:"Correto. Como o agente era menor no momento da conduta, é inimputável e responde por ato infracional, independentemente de quando ocorreu o resultado morte."},
+{id:12,block:"BLOCO 15 — Lei Penal no Tempo",text:"Um agente de 17 anos e 11 meses que pratica sequestro (crime permanente) e completa 18 anos durante o cativeiro responde pelo Código Penal.",answer:true,
+justification:"Correto. O crime permanente tem consumação prolongada no tempo; a imputabilidade é aferida durante toda a permanência, e não apenas no momento inicial."},
+{id:13,block:"BLOCO 15 — Lei Penal no Tempo",text:"A abolitio criminis só pode ser aplicada a fatos sem sentença condenatória transitada em julgado.",answer:false,
+justification:"Errado. Aplica-se também após o trânsito em julgado, cessando a execução e todos os efeitos penais da condenação (Art. 2º, parágrafo único, CP). Os efeitos civis permanecem."},
+
+// ---------------- BLOCO 7 — PRINCÍPIOS DO DIREITO PENAL (ainda faltaram) ----------------
+{id:14,block:"BLOCO 7 — Princípios do Direito Penal",text:"A responsabilidade penal da pessoa jurídica por crimes ambientais não exige a imputação concomitante de uma pessoa física, pois o STJ e o STF superaram a teoria da dupla imputação.",answer:true,
+justification:"Correto. A pessoa jurídica pode ser responsabilizada penalmente de forma autônoma, independentemente da responsabilização da pessoa física (STJ, AgRg no REsp 1.988.504/RN)."},
+{id:15,block:"BLOCO 7 — Princípios do Direito Penal",text:"Em caso de incorporação de pessoa jurídica, os efeitos extrapenais da condenação não se transferem à incorporadora.",answer:false,
+justification:"Errado. A responsabilidade civil pelos danos e os efeitos extrapenais da sentença condenatória são transmissíveis à incorporadora (STJ, REsp 1.977.172/PR), para impedir que reestruturações societárias sirvam para fugir de responsabilidades."},
+{id:16,block:"BLOCO 7 — Princípios do Direito Penal",text:"Leis complementares podem tipificar crimes e cominar penas, pois a reserva legal exige lei em sentido formal, conceito que abrange tanto leis ordinárias quanto leis complementares.",answer:true,
+justification:"Correto. Ambas as espécies normativas são aptas a criar tipos penais incriminadores."},
+{id:17,block:"BLOCO 7 — Princípios do Direito Penal",text:"O STF, no julgamento da ADO 26, realizou analogia in malam partem ao equiparar a homotransfobia ao crime de racismo.",answer:false,
+justification:"Errado. O STF não criou tipo penal novo; realizou interpretação conforme a Constituição, enquadrando a discriminação por orientação sexual no conceito de racismo social já reconhecido em precedente anterior (HC 82.424/RS), sem analogia proibida."},
+{id:18,block:"BLOCO 7 — Princípios do Direito Penal",text:"O perdimento de bens pode ser estendido aos sucessores do condenado, até o limite do valor do patrimônio transferido, conforme o Art. 5º, XLV, da CF.",answer:true,
+justification:"Correto. A multa penal, diferentemente, não tem essa previsão constitucional de extensão aos sucessores."},
+{id:19,block:"BLOCO 7 — Princípios do Direito Penal",text:"Segundo Rodrigo Roig, o Princípio da Humanidade na execução penal legitima o uso da pena como instrumento de recuperação, reeducação e ressocialização do preso.",answer:false,
+justification:"Errado. O princípio busca justamente deslegitimar esse uso (ideologia tratamental positivista), exigindo que o magistrado reconheça o preso como sujeito de direitos, afastando juízos morais, retributivos ou correcionais."},
+
+// ---------------- BLOCO 8 — PRINCÍPIO DA INSIGNIFICÂNCIA (ainda faltaram) ----------------
+{id:20,block:"BLOCO 8 — Insignificância",text:"O princípio da insignificância exclui a tipicidade material da conduta, e não a tipicidade formal, que permanece intacta.",answer:true,
+justification:"Correto. A conduta continua se adequando ao tipo penal (tipicidade formal); o que se afasta é a relevância da lesão ao bem jurídico (tipicidade material)."},
+{id:21,block:"BLOCO 8 — Insignificância",text:"O STF admite, em casos concretos, a aplicação da insignificância em crimes contra o patrimônio público, afastando a Súmula 599 do STJ conforme as especificidades do caso (HC 107.370).",answer:true,
+justification:"Correto. O STF entende que o cometimento de conduta em prejuízo da administração pública não impede, a princípio, a incidência da bagatela, devendo-se avaliar o caso concreto."},
+{id:22,block:"BLOCO 8 — Insignificância",text:"Para crimes patrimoniais de pequena monta sem dolo de dano contra o patrimônio público, aplica-se a bagatela imprópria, e não a bagatela própria.",answer:false,
+justification:"Errado. Aplica-se a bagatela própria (o fato nasce irrelevante, afastando a tipicidade material), e não a imprópria, que pressupõe um fato típico e ilícito cuja punição se torna desnecessária por circunstâncias posteriores."},
+
+// ---------------- BLOCO 15 — LEI PENAL NO TEMPO (ainda faltaram) ----------------
+{id:23,block:"BLOCO 15 — Lei Penal no Tempo",text:"Pelo Tema 934 do STJ, basta a inversão da posse de fato da res furtiva, ainda que por breve espaço de tempo e seguida de perseguição, para a consumação do furto, sendo prescindível a posse mansa e pacífica.",answer:true,
+justification:"Correto. O STJ adota a teoria da amotio, segundo a qual a posse mansa, pacífica ou desvigiada da coisa é prescindível para a consumação do furto."},
+{id:24,block:"BLOCO 15 — Lei Penal no Tempo",text:"O valor do bem estar abaixo do salário mínimo já é suficiente, por si só, para justificar a insignificância no furto.",answer:false,
+justification:"Errado. O STJ exige que o valor não ultrapasse 10% do salário mínimo vigente à época dos fatos, além da análise cumulativa dos demais vetores MARI."},
+
+// ---------------- TERRITORIALIDADE — BLOCO I: DISTINÇÕES CRÍTICAS (ART. 5º CP) ----------------
+{id:25,block:"Territorialidade — Bloco I",text:"Quando o crime ocorre a bordo de embarcação privada estrangeira atracada em porto brasileiro, aplica-se a lei brasileira com base na extraterritorialidade.",answer:false,
+justification:"Errado. Aplica-se com base na territorialidade (Art. 5º, §2º, CP), pois o porto brasileiro é território nacional; a extraterritorialidade pressupõe crime cometido no estrangeiro."},
+{id:26,block:"Territorialidade — Bloco I",text:"A embarcação privada estrangeira atracada em porto brasileiro é considerada extensão do território do país de origem.",answer:false,
+justification:"Errado. Apenas embarcações públicas ou a serviço do governo estrangeiro gozam dessa condição; a embarcação privada estrangeira em porto ou mar territorial brasileiro submete-se à lei brasileira."},
+{id:27,block:"Territorialidade — Bloco I",text:"A nacionalidade do autor ou da vítima não interfere na aplicação da lei brasileira quando o crime é cometido em território nacional, pois a territorialidade incide independentemente dessas condições.",answer:true,
+justification:"Correto. O princípio da territorialidade aplica-se ao crime cometido no território nacional independentemente da nacionalidade do autor ou da vítima."},
+{id:28,block:"Territorialidade — Bloco I",text:"Quando um estrangeiro comete um crime no Brasil contra uma vítima brasileira, a aplicação da lei brasileira é condicionada pela nacionalidade da vítima, nos termos do Art. 7º, §3º, CP.",answer:false,
+justification:"Errado. A territorialidade é incondicional quanto à nacionalidade. O princípio da nacionalidade passiva (Art. 7º, §3º, CP) só se aplica quando o crime é cometido fora do Brasil."},
+{id:29,block:"Territorialidade — Bloco I",text:"O Princípio do Pavilhão (bandeira) se aplica a embarcações estrangeiras privadas atracadas em porto brasileiro.",answer:false,
+justification:"Errado. O Princípio do Pavilhão (Art. 7º, II, 'c', CP) aplica-se a embarcações brasileiras privadas no estrangeiro; a embarcação estrangeira em porto brasileiro submete-se à lei brasileira por territorialidade."},
+{id:30,block:"Territorialidade — Bloco I",text:"O Art. 5º, §1º, do CP trata da extensão territorial ativa (embarcações/aeronaves brasileiras onde quer que estejam), enquanto o §2º trata da extensão territorial passiva (embarcações/aeronaves estrangeiras privadas em território brasileiro).",answer:true,
+justification:"Correto. Em ambos os casos aplica-se a lei brasileira por territorialidade, e não por extraterritorialidade."},
+
+// ---------------- TERRITORIALIDADE — BLOCO II: EMBARCAÇÕES E AERONAVES BRASILEIRAS (ART. 5º, §1º CP) ----------------
+{id:31,block:"Territorialidade — Bloco II",text:"Uma aeronave privada brasileira a serviço do governo em território estrangeiro é considerada extensão do território nacional, aplicando-se a lei brasileira onde quer que ela se encontre.",answer:true,
+justification:"Correto. O Art. 5º, §1º, CP prevê essa extensão territorial sem qualquer condição ou requisição ministerial."},
+{id:32,block:"Territorialidade — Bloco II",text:"Para aplicar a lei brasileira a um crime cometido em aeronave privada brasileira a serviço do governo brasileiro, não é necessária requisição do Ministro da Justiça.",answer:true,
+justification:"Correto. A requisição ministerial é exigência da extraterritorialidade hipercondicionada (Art. 7º, §3º, CP); a aeronave a serviço do governo é extensão territorial incondicional (Art. 5º, §1º, CP)."},
+{id:33,block:"Territorialidade — Bloco II",text:"Uma embarcação privada brasileira ancorada em porto estrangeiro é considerada extensão do território nacional.",answer:false,
+justification:"Errado. O Art. 5º, §1º, CP exige alto-mar ou espaço aéreo correspondente; em porto estrangeiro a embarcação privada brasileira não é território nacional, podendo atrair a lei brasileira apenas por extraterritorialidade condicionada (Princípio da Representação)."},
+{id:34,block:"Territorialidade — Bloco II",text:"Em um navio mercante brasileiro em alto-mar, aplica-se a lei brasileira a um crime praticado a bordo independentemente da nacionalidade dos tripulantes envolvidos.",answer:true,
+justification:"Correto. O navio é extensão do território nacional; o que importa é o locus delicti, não a nacionalidade do autor ou da vítima."},
+{id:35,block:"Territorialidade — Bloco II",text:"Para fins de extensão territorial, apenas as embarcações/aeronaves públicas brasileiras são consideradas extensão do território nacional, e não as privadas a serviço do governo.",answer:false,
+justification:"Errado. Ambas — públicas e privadas a serviço do governo — são extensão do território nacional onde quer que se encontrem; a diferença entre elas é meramente formal, com efeito jurídico idêntico."},
+
+// ---------------- IMUNIDADE CONSULAR x IMUNIDADE DIPLOMÁTICA (TERRITORIALIDADE — BLOCO III) ----------------
+{id:36,block:"Territorialidade — Bloco III (Imunidade Consular x Diplomática)",text:"O cônsul possui imunidade penal total, da mesma forma que o embaixador.",answer:false,
+justification:"Errado. A imunidade do cônsul é funcional, limitada aos atos de ofício (Convenção de Viena sobre Relações Consulares de 1963); fora do exercício das funções, ele responde normalmente pela lei brasileira."},
+{id:37,block:"Territorialidade — Bloco III (Imunidade Consular x Diplomática)",text:"Um cônsul que pratica furto durante o carnaval, fora do exercício de suas funções, responde pela lei brasileira normalmente.",answer:true,
+justification:"Correto. A imunidade consular abrange apenas os atos de ofício; sem pertinência temática com o mandato, o cônsul responde como qualquer cidadão."},
+{id:38,block:"Territorialidade — Bloco III (Imunidade Consular x Diplomática)",text:"A imunidade do embaixador é restrita aos atos de ofício, da mesma forma que a do cônsul.",answer:false,
+justification:"Errado. A imunidade do embaixador é plena (inviolabilidade total); a restrição aos atos de ofício é característica da imunidade funcional do cônsul, não do embaixador."},
+{id:39,block:"Territorialidade — Bloco III (Imunidade Consular x Diplomática)",text:"A imunidade diplomática impede a investigação policial dos fatos pelo Estado acreditado.",answer:false,
+justification:"Errado. A imunidade diplomática impede o processo penal e a punição pelo Estado acreditado, mas não a investigação; este pode investigar e, se for o caso, declarar o diplomata persona non grata."},
+
+// ---------------- EXTRATERRITORIALIDADE — TERRITORIALIDADE BLOCO IV (ART. 7º CP) ----------------
+{id:40,block:"Territorialidade — Bloco IV (Extraterritorialidade)",text:"Um estrangeiro que compra arma no Brasil e a usa para matar outro estrangeiro na Argentina pode ser julgado pela lei brasileira pelo homicídio, ainda que a compra seja apenas ato preparatório.",answer:false,
+justification:"Errado. A lei brasileira não se aplica: a compra é ato preparatório, o homicídio foi praticado integralmente no exterior e o caso não se encaixa em nenhuma das hipóteses do Art. 7º, II, CP."},
+{id:41,block:"Territorialidade — Bloco IV (Extraterritorialidade)",text:"O retorno do agente ao território nacional é suficiente, por si só, para atrair a extraterritorialidade condicionada.",answer:false,
+justification:"Errado. É apenas uma das condições cumulativas do Art. 7º, §2º, CP; é preciso também que o fato seja punível no exterior, o crime seja extradicionável, o agente não tenha sido absolvido/cumprido pena, a punibilidade não esteja extinta, e o crime se encaixe nas hipóteses do Art. 7º, II."},
+{id:42,block:"Territorialidade — Bloco IV (Extraterritorialidade)",text:"A extraterritorialidade hipercondicionada exige, além de todas as condições da condicionada, que não tenha sido pedida ou tenha sido negada a extradição e que haja requisição do Ministro da Justiça.",answer:true,
+justification:"Correto. É exatamente essa a distinção entre a extraterritorialidade condicionada (Art. 7º, II e §2º) e a hipercondicionada (Art. 7º, §3º)."},
+{id:43,block:"Territorialidade — Bloco IV (Extraterritorialidade)",text:"O genocídio praticado por brasileiro ou domiciliado no Brasil no exterior só atrai a lei brasileira se o agente não tiver sido absolvido no exterior.",answer:false,
+justification:"Errado. É hipótese de extraterritorialidade incondicionada (Art. 7º, I, 'd', CP); a lei brasileira se aplica independentemente de qualquer condição, mesmo que o agente tenha sido absolvido ou condenado no exterior."},
+{id:44,block:"Territorialidade — Bloco IV (Extraterritorialidade)",text:"Quando uma embarcação privada brasileira está em porto estrangeiro e ali ocorre um crime não julgado pelo país estrangeiro, aplica-se a lei brasileira por territorialidade.",answer:false,
+justification:"Errado. Aplica-se pelo Princípio da Representação (extraterritorialidade condicionada — Art. 7º, II, 'c', CP), e não por territorialidade, pois a embarcação privada em porto estrangeiro não é extensão do território nacional."},
+{id:45,block:"Territorialidade — Bloco IV (Extraterritorialidade)",text:"A lei brasileira se aplica às contravenções penais praticadas por brasileiro no estrangeiro, da mesma forma que se aplica aos crimes.",answer:false,
+justification:"Errado. O Art. 2º da Lei das Contravenções Penais veda expressamente essa aplicação; a extraterritorialidade do Art. 7º CP alcança apenas crimes, não contravenções."},
+{id:46,block:"Territorialidade — Bloco IV (Extraterritorialidade)",text:"O Tribunal Penal Internacional (TPI) tem competência para julgar crimes comuns praticados a bordo de embarcações estrangeiras atracadas em território de outro Estado.",answer:false,
+justification:"Errado. A competência do TPI é restrita a genocídio, crimes contra a humanidade, crimes de guerra e crime de agressão (Art. 5º do Estatuto de Roma); crimes comuns são julgados pela lei local."},
+
+// ---------------- TÓPICOS COMPLEMENTARES (BAGATELA, IMUNIDADE DIPLOMÁTICA, ALTERNATIVIDADE, INSIGNIFICÂNCIA) ----------------
+{id:47,block:"Tópicos Complementares — Bagatela e Imunidades",text:"A bagatela imprópria tem natureza jurídica de causa supralegal de extinção da punibilidade, incidindo sobre um fato que é típico, ilícito e culpável.",answer:true,
+justification:"Correto. A pena se torna desnecessária diante das circunstâncias do caso concreto; não se confunde com a bagatela própria, que exclui a tipicidade material desde a origem."},
+{id:48,block:"Tópicos Complementares — Bagatela e Imunidades",text:"A análise da bagatela imprópria deve ser confrontada com o princípio da necessidade da pena.",answer:true,
+justification:"Correto. Avalia-se se a imposição da sanção ainda se justifica diante de circunstâncias como arrependimento, reparação do dano ou condições pessoais favoráveis."},
+{id:49,block:"Tópicos Complementares — Bagatela e Imunidades",text:"A renúncia à imunidade diplomática é sempre total, não podendo ser limitada apenas à jurisdição cognitiva.",answer:false,
+justification:"Errado. Segundo o STJ (Informativo 618/2018), a renúncia pode ser parcial, limitada à fase de conhecimento do processo, preservando a imunidade quanto ao cumprimento de eventual pena; renúncia total e parcial são institutos distintos."},
+{id:50,block:"Tópicos Complementares — Bagatela e Imunidades",text:"O diplomata está obrigado a obedecer ao preceito primário da norma penal brasileira, sendo a imunidade um obstáculo apenas ao preceito secundário (a pena).",answer:true,
+justification:"Correto. O fato permanece típico e ilícito; o que se bloqueia é a consequência sancionatória pelo Estado acreditado."},
+{id:51,block:"Tópicos Complementares — Bagatela e Imunidades",text:"Os funcionários de organismos internacionais gozam de imunidade diplomática plena independentemente de estarem em serviço, da mesma forma que o embaixador.",answer:false,
+justification:"Errado. A imunidade desses funcionários é restrita ao período em que estiverem em serviço; difere da imunidade plena do embaixador, que abrange também a família e o pessoal de apoio independentemente do exercício de funções específicas."},
+{id:52,block:"Tópicos Complementares — Alternatividade e Insignificância",text:"Na Alternatividade Própria, tipos penais diferentes, previstos em artigos distintos, tratam do mesmo fato, gerando aparente duplicidade de enquadramento.",answer:false,
+justification:"Errado. Isso descreve a Alternatividade Imprópria. A Alternatividade Própria ocorre dentro do mesmo tipo penal de ação múltipla, quando o agente pratica vários núcleos do mesmo artigo e responde por crime único."},
+{id:53,block:"Tópicos Complementares — Alternatividade e Insignificância",text:"O princípio da insignificância se aplica normalmente a crimes militares e a crimes habituais.",answer:false,
+justification:"Errado. Não se aplica a nenhum dos dois: os crimes militares têm natureza especial incompatível com a bagatela (hierarquia e disciplina), e os crimes habituais exigem reiteração de condutas, cuja análise acumulada afasta a inexpressividade da lesão."},
+{id:54,block:"Tópicos Complementares — Alternatividade e Insignificância",text:"A capacidade econômica da vítima é irrelevante na análise da insignificância, que deve considerar apenas o valor absoluto do bem subtraído ou danificado.",answer:false,
+justification:"Errado. A capacidade econômica da vítima interfere: o requisito da inexpressividade da lesão (vetor MARI) também considera o impacto no patrimônio da vítima, não apenas o valor absoluto do bem."}
+];
+
+const TOTAL = QUESTIONS.length;
+const STORAGE_KEY = "penal_p4_territorialidade_residuais_quiz_progress_v1";
+
+let state = {
+  current: 0,
+  answers: {} // id -> {selected:bool, correct:bool, guess:'sabia'|'chute'|null}
+};
+
+/* ---------- STORAGE (window.storage com fallback para localStorage) ---------- */
+async function storageGet(key){
+  if (window.storage){
+    try{
+      const r = await window.storage.get(key, false);
+      return r ? JSON.parse(r.value) : null;
+    }catch(e){ return null; }
+  }
+  try{
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : null;
+  }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  if (window.storage){
+    try{ await window.storage.set(key, JSON.stringify(value), false); return true; }
+    catch(e){ return false; }
+  }
+  try{ localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch(e){ return false; }
+}
+
+async function saveState(){
+  await storageSet(STORAGE_KEY, state);
+  const hint = document.getElementById("saveHint");
+  if (hint){
+    hint.textContent = "✓ Progresso salvo automaticamente — " + new Date().toLocaleTimeString("pt-BR");
+  }
+}
+
+async function loadState(){
+  const saved = await storageGet(STORAGE_KEY);
+  if (saved && typeof saved === "object" && saved.answers){
+    state = saved;
+    if (typeof state.current !== "number" || state.current < 0 || state.current >= TOTAL){
+      state.current = 0;
+    }
+  }
+}
+
+/* ---------- HELPERS ---------- */
+function getQuestion(idx){ return QUESTIONS[idx]; }
+function getAnswerData(id){ return state.answers[id] || null; }
+
+function computeStats(){
+  const ids = Object.keys(state.answers);
+  let correct=0, wrong=0, guessCorrect=0;
+  ids.forEach(id=>{
+    const a = state.answers[id];
+    if (a.correct){ correct++; if (a.guess==="chute") guessCorrect++; }
+    else { wrong++; }
+  });
+  return {answered: ids.length, correct, wrong, guessCorrect};
+}
+
+/* ---------- RENDER: STATS BAR ---------- */
+function renderStats(){
+  const s = computeStats();
+  const pct = s.answered ? Math.round((s.correct/s.answered)*100) : 0;
+  document.getElementById("statsBar").innerHTML = `
+    <div class="stat"><div class="num">${s.answered}/${TOTAL}</div><div class="lbl">Respondidas</div></div>
+    <div class="stat correct"><div class="num">${s.correct}</div><div class="lbl">Acertos</div></div>
+    <div class="stat wrong"><div class="num">${s.wrong}</div><div class="lbl">Erros</div></div>
+    <div class="stat"><div class="num">${pct}%</div><div class="lbl">% de acerto</div></div>
+    <div class="stat guess"><div class="num">${s.guessCorrect}</div><div class="lbl">Acertos no chute</div></div>
+  `;
+}
+
+/* ---------- RENDER: PROGRESS + SELECT ---------- */
+function renderProgress(){
+  const s = computeStats();
+  const pct = Math.round((s.answered/TOTAL)*100);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressText").textContent = `${s.answered}/${TOTAL} respondidas`;
+  document.getElementById("progressPct").textContent = pct + "%";
+}
+
+function renderSelect(){
+  const sel = document.getElementById("qSelect");
+  sel.innerHTML = "";
+  QUESTIONS.forEach((q, idx)=>{
+    const a = getAnswerData(q.id);
+    let icon = "⬜";
+    if (a) icon = a.correct ? "✅" : "❌";
+    const opt = document.createElement("option");
+    opt.value = idx;
+    opt.textContent = `${icon} Questão ${idx+1} — ${q.block.split("—")[0].trim()}`;
+    if (idx === state.current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+/* ---------- RENDER: QUESTION CARD ---------- */
+function renderQuestionCard(){
+  const idx = state.current;
+  const q = getQuestion(idx);
+  const a = getAnswerData(q.id);
+  const card = document.getElementById("questionCard");
+
+  let html = `
+    <span class="badge">${q.block}</span>
+    <div class="qnum">Questão ${idx+1} de ${TOTAL}</div>
+    <div class="qtext">${q.text}</div>
+  `;
+
+  if (!a){
+    html += `
+      <div class="vf-buttons">
+        <button class="btn-v" onclick="answerQuestion(true)">✔ VERDADEIRO</button>
+        <button class="btn-f" onclick="answerQuestion(false)">✘ FALSO</button>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="vf-buttons">
+        <button class="btn-v" disabled>✔ VERDADEIRO</button>
+        <button class="btn-f" disabled>✘ FALSO</button>
+      </div>
+      <div class="feedback">
+        <div class="result-banner ${a.correct ? "correct" : "wrong"}">
+          ${a.correct ? "✅ Você ACERTOU esta questão." : "❌ Você ERROU esta questão."}
+        </div>
+        <div class="gabarito-banner ${q.answer ? "is-true" : "is-false"}">
+          Gabarito: a afirmativa é ${q.answer ? "VERDADEIRA" : "FALSA"}
+          ${!q.answer ? "" : ""}
+          (você marcou ${a.selected ? "VERDADEIRO" : "FALSO"})
+        </div>
+        <div class="justification"><b>Justificativa:</b> ${q.justification}</div>
+        ${renderGuessArea(q, a)}
+        <div><span class="redo-link" onclick="redoQuestion(${q.id})">↺ Refazer esta questão</span></div>
+      </div>
+    `;
+  }
+
+  card.innerHTML = html;
+  document.getElementById("btnPrev").disabled = (idx === 0);
+  document.getElementById("btnNext").disabled = (idx === TOTAL-1);
+}
+
+function renderGuessArea(q, a){
+  if (!a.correct) return "";
+  if (a.guess){
+    const label = a.guess === "sabia" ? "🧠 Marcado como: eu sabia" : "🎲 Marcado como: acertei no chute";
+    const cls = a.guess === "sabia" ? "sabia" : "chute";
+    return `<div class="guess-tag ${cls}">${label}</div>`;
+  }
+  return `
+    <div class="guess-row">
+      <p>Como você chegou nessa resposta correta?</p>
+      <div class="guess-btns">
+        <button onclick="setGuess(${q.id}, 'sabia')">🧠 Eu sabia</button>
+        <button onclick="setGuess(${q.id}, 'chute')">🎲 Acertei no chute</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- RENDER: REVIEW TAB ---------- */
+function renderReview(){
+  const wrongBox = document.getElementById("reviewWrong");
+  const guessBox = document.getElementById("reviewGuess");
+  let wrongHtml = "";
+  let guessHtml = "";
+
+  QUESTIONS.forEach(q=>{
+    const a = getAnswerData(q.id);
+    if (!a) return;
+    if (!a.correct){
+      wrongHtml += `
+        <div class="review-item">
+          <span class="badge">${q.block}</span>
+          <div class="qtext">${q.text}</div>
+          <div class="gabarito-banner ${q.answer ? "is-true" : "is-false"}">Gabarito: ${q.answer ? "VERDADEIRO" : "FALSO"} (você marcou ${a.selected ? "VERDADEIRO" : "FALSO"})</div>
+          <div class="justification"><b>Justificativa:</b> ${q.justification}</div>
+          <span class="redo-link" onclick="redoQuestion(${q.id})">↺ Refazer esta questão</span>
+        </div>
+      `;
+    } else if (a.guess === "chute"){
+      guessHtml += `
+        <div class="review-item">
+          <span class="badge">${q.block}</span>
+          <div class="qtext">${q.text}</div>
+          <div class="gabarito-banner ${q.answer ? "is-true" : "is-false"}">Gabarito: ${q.answer ? "VERDADEIRO" : "FALSO"} (acerto no chute)</div>
+          <div class="justification"><b>Justificativa:</b> ${q.justification}</div>
+          <span class="redo-link" onclick="redoQuestion(${q.id})">↺ Refazer esta questão</span>
+        </div>
+      `;
+    }
+  });
+
+  wrongBox.innerHTML = wrongHtml || `<div class="empty-state">Nenhum erro registrado até agora. 🎉</div>`;
+  guessBox.innerHTML = guessHtml || `<div class="empty-state">Nenhum acerto no chute registrado até agora.</div>`;
+}
+
+/* ---------- ACTIONS ---------- */
+async function answerQuestion(selected){
+  const q = getQuestion(state.current);
+  const correct = (selected === q.answer);
+  state.answers[q.id] = {selected, correct, guess: null};
+  await saveState();
+  rerenderAll();
+}
+
+async function setGuess(id, guessType){
+  if (state.answers[id]){
+    state.answers[id].guess = guessType;
+    await saveState();
+    rerenderAll();
+  }
+}
+
+async function redoQuestion(id){
+  delete state.answers[id];
+  const idx = QUESTIONS.findIndex(q=>q.id===id);
+  if (idx >= 0) state.current = idx;
+  await saveState();
+  switchTab("quiz");
+  rerenderAll();
+}
+
+async function goPrev(){
+  if (state.current > 0){ state.current--; await saveState(); rerenderAll(); }
+}
+async function goNext(){
+  if (state.current < TOTAL-1){ state.current++; await saveState(); rerenderAll(); }
+}
+async function jumpTo(idx){
+  state.current = parseInt(idx,10);
+  await saveState();
+  rerenderAll();
+}
+
+async function resetProgress(){
+  if (!confirm("Tem certeza que deseja reiniciar todo o progresso deste quiz? Essa ação não pode ser desfeita.")) return;
+  state = {current:0, answers:{}};
+  await saveState();
+  rerenderAll();
+}
+
+function downloadHTML(){
+  const blob = new Blob(["<!DOCTYPE html>\n" + document.documentElement.outerHTML], {type:"text/html"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quiz_direito_penal_parte4.html";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function switchTab(tab){
+  document.getElementById("panelQuiz").classList.toggle("active", tab==="quiz");
+  document.getElementById("panelReview").classList.toggle("active", tab==="review");
+  document.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.tab === tab);
+  });
+  if (tab === "review") renderReview();
+}
+
+function rerenderAll(){
+  renderStats();
+  renderProgress();
+  renderSelect();
+  renderQuestionCard();
+  if (document.getElementById("panelReview").classList.contains("active")) renderReview();
+}
+
+/* ---------- WIRE UP EVENTS ---------- */
+document.getElementById("btnPrev").addEventListener("click", goPrev);
+document.getElementById("btnNext").addEventListener("click", goNext);
+document.getElementById("btnReset").addEventListener("click", resetProgress);
+document.getElementById("btnDownload").addEventListener("click", downloadHTML);
+document.getElementById("qSelect").addEventListener("change", (e)=>jumpTo(e.target.value));
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>switchTab(btn.dataset.tab));
+});
+
+/* ---------- INIT ---------- */
+(async function init(){
+  await loadState();
+  rerenderAll();
+})();
+</script>
+</body>
+</html>
